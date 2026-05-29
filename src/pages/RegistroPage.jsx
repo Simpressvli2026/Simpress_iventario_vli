@@ -330,7 +330,7 @@ export default function RegistroPage() {
                 )}
               </div>
               {!form.assinatura_url && (
-                <button type="button" className="btn btn-sm btn-outline" style={{ marginTop: 8 }} onClick={clearSignature}>Limcar</button>
+                <button type="button" className="btn btn-sm btn-outline" style={{ marginTop: 8 }} onClick={clearSignature}>Limpar</button>
               )}
             </div>
           </fieldset>
