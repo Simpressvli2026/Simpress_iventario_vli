@@ -6,7 +6,7 @@ import { createHash } from 'node:crypto'
 const JWT_SECRET = process.env.JWT_SECRET || 'sada-admin-secret-2024'
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin'
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123'
-const SITE_URL = process.env.SITE_URL || 'https://sadanotebook.netlify.app'
+const SITE_URL = (process.env.SITE_URL || 'https://sadaequipamentos.netlify.app').replace(/\/+$/, '')
 
 function hashPassword(pwd) {
   return createHash('sha256').update(pwd).digest('hex')
