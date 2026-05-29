@@ -130,10 +130,18 @@ export async function handler(event) {
     if (method === 'POST' && parts[1] === 'alterar-senha') {
       return handleAlterarSenha(event)
     }
+
+    if (method === 'POST' && parts[1] === 'gerar-convite') {
+      return handleGerarConvite(event)
+    }
   }
 
   if (method === 'GET' && parts[0] === 'validar-token') {
     return handleValidarToken(event)
+  }
+
+  if (method === 'GET' && parts[0] === 'convidado' && parts[1]) {
+    return handleVisualizarConvidado(event, parts[1])
   }
 
   return json({ error: 'Rota não encontrada' }, 404)
@@ -177,6 +185,7 @@ async function initDb() {
     } catch {}
   }
   await client.execute(`CREATE TABLE IF NOT EXISTS admin_settings (key TEXT PRIMARY KEY, value TEXT NOT NULL)`)
+  await client.execute(`CREATE TABLE IF NOT EXISTS guest_tokens (token TEXT PRIMARY KEY, usado INTEGER DEFAULT 0, criado_em TEXT DEFAULT CURRENT_TIMESTAMP)`)
 }
 
 async function handleValidarToken(event) {
@@ -456,4 +465,39 @@ async function handleAlterarSenha(event) {
   await setAdminPassword(nova_senha)
 
   return json({ sucesso: true, mensagem: 'Senha alterada com sucesso!' })
+}
+
+async function handleGerarConvite(event) {
+  const token = uuidv4()
+  const client = getDb()
+  await client.execute({
+    sql: 'INSERT INTO guest_tokens (token) VALUES (?)',
+    args: [token],
+  })
+  const link = `${SITE_URL}/convidado/${token}`
+  return json({ sucesso: true, link })
+}
+
+async function handleVisualizarConvidado(event, token) {
+  const client = getDb()
+  const result = await client.execute({
+    sql: 'SELECT usado FROM guest_tokens WHERE token = ?',
+    args: [token],
+  })
+
+  if (result.rows.length === 0) {
+    return json({ error: 'Link inválido' }, 404)
+  }
+
+  if (result.rows[0].usado) {
+    return json({ error: 'Este link já foi utilizado' }, 400)
+  }
+
+  await client.execute({
+    sql: 'UPDATE guest_tokens SET usado = 1 WHERE token = ?',
+    args: [token],
+  })
+
+  const registros = await client.execute('SELECT * FROM registros ORDER BY criado_em DESC')
+  return json({ registros: registros.rows })
 }

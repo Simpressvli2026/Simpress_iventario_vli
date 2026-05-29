@@ -90,3 +90,16 @@ export async function alterarSenha(token, senha_atual, nova_senha) {
   })
   return res.json()
 }
+
+export async function gerarConvite(token) {
+  const res = await fetch(`${API_BASE}/admin/gerar-convite`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+  })
+  return res.json()
+}
+
+export async function visualizarConvidado(token) {
+  const res = await fetch(`${API_BASE}/convidado/${token}`)
+  return res.json()
+}

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { listarRegistros, getRegistro, editarRegistro, deletarRegistro, alterarSenha } from '../lib/api'
+import { listarRegistros, getRegistro, editarRegistro, deletarRegistro, alterarSenha, gerarConvite } from '../lib/api'
 import * as XLSX from 'xlsx'
 
 const TOTAL_NOTEBOOKS = 10000
@@ -395,6 +395,8 @@ export default function AdminDashboard() {
   const [editRegistro, setEditRegistro] = useState(null)
   const [deleteRegistro, setDeleteRegistro] = useState(null)
   const [showPasswordModal, setShowPasswordModal] = useState(false)
+  const [conviteLink, setConviteLink] = useState('')
+  const [gerandoConvite, setGerandoConvite] = useState(false)
   const [toast, setToast] = useState(null)
   const prevCount = useRef(0)
   const navigate = useNavigate()
@@ -455,6 +457,18 @@ export default function AdminDashboard() {
   function handleDeleteClick(r, e) { e.stopPropagation(); setDeleteRegistro(r) }
   function handleLogout() { localStorage.removeItem('admin_token'); navigate('/admin/login') }
 
+  async function handleGerarConvite() {
+    setGerandoConvite(true)
+    setConviteLink('')
+    const data = await gerarConvite(token)
+    if (data.link) {
+      setConviteLink(data.link)
+    } else {
+      setError(data.error || 'Erro ao gerar link')
+    }
+    setGerandoConvite(false)
+  }
+
   function exportXLSX() {
     const headers = ['Nome', 'Email', 'Serial', 'Modelo', 'Setor', 'Tipo de Atuação', 'Endereço (Rua)', 'Bairro', 'Cidade', 'CEP', 'Mochila', 'Carregador', 'Teclado', 'Mouse', 'Assinatura', 'Matrícula', 'Assinatura_URL', 'Observações', 'Data', 'Status']
     const data = filteredRegistros.map(r => ({
@@ -501,6 +515,7 @@ export default function AdminDashboard() {
           <h1>SADA &mdash; Registro de Notebooks</h1>
           <div className="admin-header-actions">
             <button className="btn btn-sm" onClick={() => navigate('/admin/enviar')}>Links</button>
+            <button className="btn btn-sm btn-outline" onClick={handleGerarConvite} disabled={gerandoConvite}>{gerandoConvite ? 'Gerando...' : 'Link Convidado'}</button>
             <button className="btn btn-sm btn-outline" onClick={() => setShowPasswordModal(true)}>Alterar Senha</button>
             <button className="btn btn-sm btn-outline" onClick={handleLogout}>Sair</button>
           </div>
@@ -550,6 +565,16 @@ export default function AdminDashboard() {
             </div>
 
             {error && <div className="alert alert-error">{error}</div>}
+
+            {conviteLink && (
+              <div className="link-box" style={{ marginBottom: 20 }}>
+                <label>Link de convite (uso único) — compartilhe com quem precisa visualizar</label>
+                <div className="link-row">
+                  <input className="link-input" value={conviteLink} readOnly onClick={e => e.target.select()} />
+                  <button className="btn btn-sm" onClick={() => { navigator.clipboard.writeText(conviteLink); setConviteLink('') }}>Copiar</button>
+                </div>
+              </div>
+            )}
 
             <div className="admin-toolbar">
               <div className="toolbar-left">
