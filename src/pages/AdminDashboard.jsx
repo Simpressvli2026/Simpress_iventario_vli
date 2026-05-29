@@ -92,17 +92,15 @@ function DetailModal({ registro, onClose, onEdit }) {
               {[registro.endereco_rua, registro.endereco_bairro, registro.endereco_cidade, registro.endereco_cep].filter(Boolean).join(', ') || '-'}
             </span>
           </div>
-          <div className="detail-field">
-            <span className="detail-label">Assinatura</span>
-            <span className="detail-value">
-              {registro.assinatura_url ? (
+          <div className="detail-field" style={{ gridColumn: '1 / -1' }}>
+            <span className="detail-label">Assinatura de Recebimento</span>
+            <span className="detail-value" style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
+              <span><strong>Nome:</strong> {registro.assinatura_nome || '-'}</span>
+              <span><strong>Matrícula:</strong> {registro.assinatura_matricula || '-'}</span>
+              {registro.assinatura_url && (
                 <img src={registro.assinatura_url} alt="Assinatura" className="signature-thumb" />
-              ) : (registro.assinatura_nome || '-')}
+              )}
             </span>
-          </div>
-          <div className="detail-field">
-            <span className="detail-label">Matrícula</span>
-            <span className="detail-value">{registro.assinatura_matricula || '-'}</span>
           </div>
           <div className="detail-field">
             <span className="detail-label">Acessórios</span>
