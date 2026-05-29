@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { listarRegistros, getRegistro, editarRegistro, deletarRegistro, alterarSenha } from '../lib/api'
 import * as XLSX from 'xlsx'
 
-const TOTAL_NOTEBOOKS = 2700
+const TOTAL_NOTEBOOKS = 10000
 
 function playNotificationSound() {
   try {
