@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Relatório Técnico - Infraestrutura do Projeto</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: #f3f4f6;
+    color: #1f2937;
+    padding: 40px;
+    line-height: 1.6;
+  }
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  .header {
+    background: linear-gradient(135deg, #0047BB, #003399);
+    color: white;
+    padding: 48px 40px;
+    border-radius: 16px;
+    margin-bottom: 32px;
+    text-align: center;
+  }
+  .header h1 {
+    font-size: 32px;
+    font-weight: 800;
+    margin-bottom: 8px;
+    letter-spacing: -0.5px;
+  }
+  .header p {
+    font-size: 16px;
+    opacity: 0.85;
+  }
+  .section {
+    background: white;
+    border-radius: 12px;
+    padding: 32px;
+    margin-bottom: 24px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+  .section h2 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #0047BB;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 3px solid #e5e7eb;
+  }
+  .section h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #374151;
+    margin-top: 20px;
+    margin-bottom: 8px;
+  }
+  .section p {
+    font-size: 14px;
+    color: #4b5563;
+    margin-bottom: 12px;
+  }
+  .section ul {
+    list-style: none;
+    padding: 0;
+  }
+  .section ul li {
+    font-size: 14px;
+    color: #4b5563;
+    padding: 6px 0 6px 24px;
+    position: relative;
+  }
+  .section ul li::before {
+    content: "";
+    position: absolute;
+    left: 4px;
+    top: 12px;
+    width: 8px;
+    height: 8px;
+    background: #0047BB;
+    border-radius: 2px;
+  }
+  .badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    margin-right: 4px;
+  }
+  .badge-green { background: #d1fae5; color: #065f46; }
+  .badge-blue { background: #dbeafe; color: #1e40af; }
+  .badge-yellow { background: #fef3c7; color: #92400e; }
+  .table-wrap {
+    overflow-x: auto;
+    margin-top: 16px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  table th {
+    background: #f9fafb;
+    text-align: left;
+    padding: 12px 16px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #6b7280;
+    border-bottom: 2px solid #e5e7eb;
+  }
+  table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #f3f4f6;
+    color: #374151;
+  }
+  table tr:last-child td {
+    border-bottom: none;
+  }
+  .tag {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .tag-ok { background: #d1fae5; color: #065f46; }
+  .tag-warn { background: #fef3c7; color: #92400e; }
+  .tag-info { background: #dbeafe; color: #1e40af; }
+  .client-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .client-item {
+    background: #f3f4f6;
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #374151;
+  }
+  .footer {
+    text-align: center;
+    font-size: 13px;
+    color: #9ca3af;
+    padding: 24px 0;
+  }
+  @media print {
+    body { background: white; padding: 20px; }
+    .section { box-shadow: none; border: 1px solid #e5e7eb; }
+    .header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .badge-green, .badge-blue, .badge-yellow { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .tag-ok, .tag-warn, .tag-info { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .client-item { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <h1>Relatório Técnico de Infraestrutura</h1>
+    <p>Projeto: Registro de Notebooks Localiza &mdash; BH</p>
+    <p style="margin-top: 8px; font-size: 14px; opacity: 0.7;">Maio 2026</p>
+  </div>
+
+  <!-- NETLIFY -->
+  <div class="section">
+    <h2>1. Netlify &mdash; Hospedagem e Backend Serverless</h2>
+
+    <h3>O que é</h3>
+    <p>Plataforma de hospedagem frontend (React/Vite) com suporte a <strong>serverless functions</strong>. O código é versionado no GitHub e o deploy é automático a cada commit. O backend (API) roda como Netlify Functions sem necessidade de gerenciar servidores.</p>
+
+    <h3>Segurança e Certificações</h3>
+    <ul>
+      <li><span class="badge badge-green">SOC 2 Type II</span> Relatório de auditoria independente</li>
+      <li><span class="badge badge-green">ISO 27001</span> Gestão de segurança da informação</li>
+      <li><span class="badge badge-green">PCI DSS</span> Compatível com padrão de cartões</li>
+      <li><span class="badge badge-green">GDPR</span> e <span class="badge badge-green">CCPA</span> Privacidade de dados</li>
+      <li><span class="badge badge-blue">AES-256</span> Dados criptografados em repouso</li>
+      <li><span class="badge badge-blue">TLS 1.2+</span> Tráfego criptografado em trânsito</li>
+      <li><span class="badge badge-blue">WAF</span> Web Application Firewall com regras OWASP Top 10</li>
+      <li>DDoS automático, rate limiting, firewall por IP/país</li>
+    </ul>
+
+    <h3>Clientes de grande porte</h3>
+    <div class="client-list">
+      <span class="client-item">Nike</span>
+      <span class="client-item">Google</span>
+      <span class="client-item">Spotify</span>
+      <span class="client-item">Netflix</span>
+      <span class="client-item">McDonald's</span>
+      <span class="client-item">Facebook</span>
+    </div>
+
+    <h3>Avaliação para o projeto</h3>
+    <p><span class="tag tag-ok">Recomendado</span> O plano Free cobre perfeitamente o projeto (100 GB de banda/mês, 300 horas de build/mês). Para escala futura, planos Pro e Enterprise oferecem SLA, SSO, e suporte dedicado.</p>
+  </div>
+
+  <!-- TURSO -->
+  <div class="section">
+    <h2>2. Turso (libSQL) &mdash; Banco de Dados SQL na Nuvem</h2>
+
+    <h3>O que é</h3>
+    <p>Banco de dados SQL compatível com SQLite, mas rodando na nuvem. Utilizamos o pacote <code>@libsql/client</code> (libSQL) que é um fork do SQLite com extensões, considerado <strong>production-ready</strong>. O novo Turso Database (reescrita em Rust) ainda está em beta, mas não é o que estamos usando.</p>
+
+    <h3>Segurança</h3>
+    <ul>
+      <li><span class="badge badge-green">SOC 2</span> Certificação em andamento para Turso Cloud</li>
+      <li><span class="badge badge-blue">Criptografia em repouso</span> Todos os dados criptografados a nível de volume</li>
+      <li><span class="badge badge-blue">BYOK</span> Bring Your Own Key (você controla a chave de criptografia)</li>
+      <li><span class="badge badge-blue">AEAD</span> Algoritmos de criptografia autenticada (AES-GCM, ChaCha20)</li>
+      <li>Backups contínuos e Point-in-Time Recovery</li>
+    </ul>
+
+    <h3>Avaliação para o projeto</h3>
+    <p><span class="tag tag-ok">Recomendado</span> O libSQL (que usamos via <code>@libsql/client</code>) é maduro e usado em produção. Para 2700 registros é mais que suficiente. A Turso Cloud tem plano gratuito generoso e escala facilmente.</p>
+
+    <h3>Observação importante</h3>
+    <p>O Turso Database (reescrita em Rust) <strong>ainda está em beta</strong> e não recomendado para produção. Nós usamos o libSQL (fork do SQLite), que é <strong>production-ready</strong>.</p>
+  </div>
+
+  <!-- CLOUDINARY -->
+  <div class="section">
+    <h2>3. Cloudinary &mdash; Gerenciamento de Imagens</h2>
+
+    <h3>O que é</h3>
+    <p>Plataforma completa de gerenciamento de imagens e vídeos: upload, armazenamento, transformação sob demanda e entrega via CDN global. Usamos para armazenar as 3 fotos de cada notebook registrado.</p>
+
+    <h3>Segurança e Certificações</h3>
+    <ul>
+      <li><span class="badge badge-green">SOC 2 Type II</span> Auditado pela Deloitte anualmente</li>
+      <li><span class="badge badge-green">ISO 27001</span> Gestão de segurança</li>
+      <li><span class="badge badge-green">HIPAA</span> Conformidade para dados de saúde</li>
+      <li><span class="badge badge-green">GDPR</span> Conformidade com privacidade europeia</li>
+      <li><span class="badge badge-blue">Criptografia</span> Em repouso e em trânsito</li>
+      <li><span class="badge badge-blue">Bug Bounty</span> Programa de recompensa por vulnerabilidades (24/7)</li>
+      <li>Testes de penetração anuais por terceiros</li>
+      <li>Tokens assinados, ACL por IP/país, SSO, MFA</li>
+    </ul>
+
+    <h3>Clientes de grande porte</h3>
+    <div class="client-list">
+      <span class="client-item">Netflix</span>
+      <span class="client-item">Airbnb</span>
+      <span class="client-item">Etsy</span>
+      <span class="client-item">Shopify</span>
+      <span class="client-item">BuzzFeed</span>
+      <span class="client-item">NASA</span>
+    </div>
+
+    <h3>Avaliação para o projeto</h3>
+    <p><span class="tag tag-ok">Recomendado</span> Plano Free atende bem (uploads via unsigned preset). Para produção mais robusta, planos pagos oferecem tokens de acesso, CDN dedicada e suporte Enterprise.</p>
+  </div>
+
+  <!-- COMPARATIVO: NOSSO SISTEMA vs POWER APPS -->
+  <div class="section">
+    <h2>4. Nosso Sistema vs Microsoft Power Apps</h2>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 22%;">Critério</th>
+            <th style="width: 39%;">Nosso Sistema (React + Netlify + Turso)</th>
+            <th style="width: 39%;">Microsoft Power Apps</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Curva de aprendizado</strong></td>
+            <td><span class="tag tag-warn">Média</span> Requer conhecimento em React, API, SQL</td>
+            <td><span class="tag tag-ok">Baixa</span> Low-code, arrasta e solta</td>
+          </tr>
+          <tr>
+            <td><strong>Acesso ao formulário</strong></td>
+            <td><span class="tag tag-ok">Público</span> Link aberto, sem login</td>
+            <td><span class="tag tag-warn">Restrito</span> Exige login Microsoft corporativo</td>
+          </tr>
+          <tr>
+            <td><strong>Flexibilidade de UI</strong></td>
+            <td><span class="tag tag-ok">Total</span> CSS sob medida, layout responsivo</td>
+            <td><span class="tag tag-warn">Limitada</span> Componentes pré-definidos</td>
+          </tr>
+          <tr>
+            <td><strong>Upload de imagens</strong></td>
+            <td><span class="tag tag-ok">Cloudinary</span> CDN global, otimização automática</td>
+            <td><span class="tag tag-warn">SharePoint</span> Mais pesado, sem otimização</td>
+          </tr>
+          <tr>
+            <td><strong>Banco de dados</strong></td>
+            <td><span class="tag tag-ok">Turso (SQL)</span> Relacional, consultas avançadas</td>
+            <td><span class="tag tag-ok">Dataverse/SQL</span> Também relacional</td>
+          </tr>
+          <tr>
+            <td><strong>Exportação</strong></td>
+            <td><span class="tag tag-ok">XLSX</span> Direto do dashboard</td>
+            <td><span class="tag tag-ok">Excel</span> Integração nativa</td>
+          </tr>
+          <tr>
+            <td><strong>Hospedagem</strong></td>
+            <td><span class="tag tag-ok">Netlify</span> CDN global, serverless, gratuito</td>
+            <td><span class="tag tag-warn">Microsoft Cloud</span> Requer licenças pagas por usuário</td>
+          </tr>
+          <tr>
+            <td><strong>Custo</strong></td>
+            <td><span class="tag tag-ok">Gratuito</span> Planos free das 3 plataformas</td>
+            <td><span class="tag tag-warn">Pago</span> US$ 20-40/usuário/mês</td>
+          </tr>
+          <tr>
+            <td><strong>Vendor lock-in</strong></td>
+            <td><span class="tag tag-ok">Baixo</span> Código aberto, portátil (React)</td>
+            <td><span class="tag tag-warn">Alto</span> Preso no ecossistema Microsoft</td>
+          </tr>
+          <tr>
+            <td><strong>Versionamento</strong></td>
+            <td><span class="tag tag-ok">Git/GitHub</span> Controle de versão profissional</td>
+            <td><span class="tag tag-warn">Limitado</span> Versões pela própria plataforma</td>
+          </tr>
+          <tr>
+            <td><strong>Deploy</strong></td>
+            <td><span class="tag tag-ok">Automático</span> Git push já publica</td>
+            <td><span class="tag tag-warn">Manual</span> Publicação pela interface</td>
+          </tr>
+          <tr>
+            <td><strong>Tempo de desenvolvimento</strong></td>
+            <td><span class="tag tag-warn">Médio (dias)</span> Mais código, mais controle</td>
+            <td><span class="tag tag-ok">Rápido (horas)</span> Prototipagem ágil</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Veredito</h3>
+    <p style="margin-top: 12px; padding: 16px; background: #eff6ff; border-radius: 8px; font-size: 14px;">
+      <strong>Nosso sistema é superior</strong> para este projeto porque precisamos de <strong>formulário público sem login, upload de fotos via CDN, liberdade total de layout e custo zero</strong>. O Power Apps seria mais rápido de prototipar, mas traria custos recorrentes por usuário, exigiria login Microsoft (barreira para os funcionários) e nos prenderia ao ecossistema Microsoft.
+    </p>
+  </div>
+
+  <!-- TABELA COMPARATIVA DAS PLATAFORMAS -->
+  <div class="section">
+    <h2>5. Tabela Comparativa &mdash; Plataformas</h2>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Critério</th>
+            <th>Netlify</th>
+            <th>Turso (libSQL)</th>
+            <th>Cloudinary</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Certificações</strong></td>
+            <td><span class="tag tag-ok">SOC 2, ISO 27001, PCI, GDPR</span></td>
+            <td><span class="tag tag-ok">SOC 2</span></td>
+            <td><span class="tag tag-ok">SOC 2, ISO 27001, HIPAA</span></td>
+          </tr>
+          <tr>
+            <td><strong>Produção?</strong></td>
+            <td><span class="tag tag-ok">Sim</span></td>
+            <td><span class="tag tag-ok">Sim (libSQL)</span></td>
+            <td><span class="tag tag-ok">Sim</span></td>
+          </tr>
+          <tr>
+            <td><strong>Usado por grandes</strong></td>
+            <td>Nike, Google, Spotify, Netflix</td>
+            <td>Times Vercel, Cloudflare</td>
+            <td>Netflix, Shopify, NASA, Airbnb</td>
+          </tr>
+          <tr>
+            <td><strong>Nosso plano</strong></td>
+            <td><span class="tag tag-info">Free</span></td>
+            <td><span class="tag tag-info">Escalável</span></td>
+            <td><span class="tag tag-info">Free</span></td>
+          </tr>
+          <tr>
+            <td><strong>Criptografia repouso</strong></td>
+            <td>AES-256</td>
+            <td>AEAD (AES-GCM, etc.)</td>
+            <td>Sim</td>
+          </tr>
+          <tr>
+            <td><strong>Criptografia trânsito</strong></td>
+            <td>TLS 1.2+</td>
+            <td>TLS</td>
+            <td>TLS</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- CREDENCIAIS DO PROJETO -->
+  <div class="section">
+    <h2>6. Credenciais do Projeto</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Serviço</th>
+            <th>Credencial</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Admin Login (Netlify)</strong></td>
+            <td>usuário: <code>admin</code> / senha: <code>Localiza01.</code></td>
+          </tr>
+          <tr>
+            <td><strong>Email do projeto</strong></td>
+            <td><code>localizanotebook@gmail.com</code></td>
+          </tr>
+          <tr>
+            <td><strong>Cloudinary</strong></td>
+            <td>cloud name: <code>ddj7sgmcm</code> / upload preset: <code>registro_notebooks</code></td>
+          </tr>
+          <tr>
+            <td><strong>Site</strong></td>
+            <td><code>https://localizanotebook.netlify.app</code></td>
+          </tr>
+          <tr>
+            <td><strong>Repositório</strong></td>
+            <td><code>github.com/localizanotebook-svg/registro-notebooks</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- RESUMO -->
+  <div class="section" style="border-left: 4px solid #0047BB;">
+    <h2 style="border-bottom-color: #0047BB; color: #003399;">7. Conclusão</h2>
+    <p style="font-size: 15px; font-weight: 600; margin-bottom: 16px;">As três plataformas são seguras, maduras e amplamente adotadas por empresas de grande porte.</p>
+    <ul>
+      <li><strong>Netlify</strong> &mdash; Padrão de mercado para frontend serverless. Usado por gigantes como Nike e Google.</li>
+      <li><strong>Turso/libSQL</strong> &mdash; Banco SQL moderno e escalável. O libSQL é production-ready; o novo Turso DB está em beta.</li>
+      <li><strong>Cloudinary</strong> &mdash; Praticamente padrão da indústria para gestão de imagens. Presente em milhares de empresas globais.</li>
+    </ul>
+    <p style="margin-top: 16px; padding: 16px; background: #eff6ff; border-radius: 8px; font-size: 14px;">
+      <strong>Para este projeto</strong> &mdash; 2700 registros, fotos de notebooks, formulário público &mdash; todas as três plataformas operam <strong>muito folgadas</strong> nos planos gratuitos. Caso haja crescimento, todas oferecem planos pagos com suporte Enterprise, SLA e recursos avançados de segurança.
+    </p>
+  </div>
+
+  <div class="footer">
+    Documento gerado automaticamente &mdash; Projeto Registro de Notebooks Localiza
+  </div>
+
+</div>
+</body>
+</html>
