@@ -577,6 +577,7 @@ export default function AdminDashboard() {
                     <th>Setor</th>
                     <th>Atuação</th>
                     <th>Acessórios</th>
+                    <th>Assinatura</th>
                     <th>Observações</th>
                     <th>Data</th>
                     <th>Fotos</th>
@@ -586,7 +587,7 @@ export default function AdminDashboard() {
                 </thead>
                 <tbody>
                   {filteredRegistros.length === 0 ? (
-                    <tr><td colSpan="12" className="empty">Nenhum registro encontrado</td></tr>
+                    <tr><td colSpan="13" className="empty">Nenhum registro encontrado</td></tr>
                   ) : (
                     filteredRegistros.map(r => (
                       <tr key={r.id} className="clickable-row" onClick={() => handleRowClick(r)}>
@@ -597,6 +598,13 @@ export default function AdminDashboard() {
                         <td style={{ fontSize: 13 }}>{r.setor || <span className="empty-field">-</span>}</td>
                         <td style={{ fontSize: 13 }}>{r.tipo_atuacao || <span className="empty-field">-</span>}</td>
                         <td style={{ fontSize: 12 }}>{acessoriosText(r)}</td>
+                        <td style={{ fontSize: 12, whiteSpace: 'nowrap' }}>
+                          {r.assinatura_url ? (
+                            <img src={r.assinatura_url} alt="Ass" className="foto-thumb" style={{ width: 28, height: 28 }} title={`${r.assinatura_nome || ''} - ${r.assinatura_matricula || ''}`} />
+                          ) : (
+                            <span style={{ fontSize: 11, color: 'var(--gray-400)' }}>{r.assinatura_nome ? `${r.assinatura_nome.slice(0, 15)}...` : '-'}</span>
+                          )}
+                        </td>
                         <td style={{ fontSize: 12, maxWidth: 150, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                           {r.observacao || <span className="empty-field">-</span>}
                         </td>
