@@ -94,7 +94,11 @@ function DetailModal({ registro, onClose, onEdit }) {
           </div>
           <div className="detail-field">
             <span className="detail-label">Assinatura</span>
-            <span className="detail-value">{registro.assinatura_nome || '-'}</span>
+            <span className="detail-value">
+              {registro.assinatura_url ? (
+                <img src={registro.assinatura_url} alt="Assinatura" className="signature-thumb" />
+              ) : (registro.assinatura_nome || '-')}
+            </span>
           </div>
           <div className="detail-field">
             <span className="detail-label">Matrícula</span>
@@ -454,7 +458,7 @@ export default function AdminDashboard() {
   function handleLogout() { localStorage.removeItem('admin_token'); navigate('/admin/login') }
 
   function exportXLSX() {
-    const headers = ['Nome', 'Email', 'Serial', 'Modelo', 'Setor', 'Tipo de Atuação', 'Endereço (Rua)', 'Bairro', 'Cidade', 'CEP', 'Mochila', 'Carregador', 'Teclado', 'Mouse', 'Assinatura', 'Matrícula', 'Observações', 'Data', 'Status']
+    const headers = ['Nome', 'Email', 'Serial', 'Modelo', 'Setor', 'Tipo de Atuação', 'Endereço (Rua)', 'Bairro', 'Cidade', 'CEP', 'Mochila', 'Carregador', 'Teclado', 'Mouse', 'Assinatura', 'Matrícula', 'Assinatura_URL', 'Observações', 'Data', 'Status']
     const data = filteredRegistros.map(r => ({
       'Nome': r.nome,
       'Email': r.email,
@@ -472,6 +476,7 @@ export default function AdminDashboard() {
       'Mouse': Number(r.com_mouse) ? 'Sim' : 'Não',
       'Assinatura': r.assinatura_nome || '',
       'Matrícula': r.assinatura_matricula || '',
+      'Assinatura_URL': r.assinatura_url || '',
       'Observações': r.observacao || '',
       'Data': r.enviado_em || r.criado_em,
       'Status': r.enviado_em ? 'Registrado' : 'Pendente',

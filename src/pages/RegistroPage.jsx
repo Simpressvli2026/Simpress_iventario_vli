@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams } from 'react-router-dom'
 import { validarToken, registrarDados, registrarPublico } from '../lib/api'
+import SignatureCanvas from 'react-signature-canvas'
 
 const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME
 const UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET
@@ -16,8 +17,10 @@ export default function RegistroPage() {
   const [error, setError] = useState('')
   const [uploading, setUploading] = useState([false, false, false, false])
   const [previews, setPreviews] = useState([null, null, null, null])
+  const [signatureUploading, setSignatureUploading] = useState(false)
   const cameraInputs = [useRef(), useRef(), useRef(), useRef()]
   const galleryInputs = [useRef(), useRef(), useRef(), useRef()]
+  const sigRef = useRef()
 
   const [form, setForm] = useState({
     nome: '',
@@ -36,6 +39,7 @@ export default function RegistroPage() {
     setor: '',
     assinatura_nome: '',
     assinatura_matricula: '',
+    assinatura_url: '',
     tipo_atuacao: '',
     endereco_rua: '',
     endereco_bairro: '',
@@ -62,10 +66,11 @@ export default function RegistroPage() {
       nome: '', email: '', serial: '', modelo_notebook: 'EliteBook 645 G11 da HP',
       foto1_url: '', foto2_url: '', foto3_url: '', foto4_url: '', observacao: '',
       com_mochila: false, com_carregador: false, com_teclado: false, com_mouse: false, setor: '',
-      assinatura_nome: '', assinatura_matricula: '', tipo_atuacao: '',
+      assinatura_nome: '', assinatura_matricula: '', assinatura_url: '', tipo_atuacao: '',
       endereco_rua: '', endereco_bairro: '', endereco_cidade: '', endereco_cep: '',
     })
     setPreviews([null, null, null, null])
+    setSignatureUploading(false)
     setError('')
     setSuccess(false)
     setSubmitting(false)
@@ -119,12 +124,52 @@ export default function RegistroPage() {
     if (galleryInputs[index].current) galleryInputs[index].current.value = ''
   }
 
+  async function uploadSignature(blob) {
+    setSignatureUploading(true)
+    setError('')
+    const url = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`
+    const fd = new FormData()
+    fd.append('file', blob, 'assinatura.png')
+    fd.append('upload_preset', UPLOAD_PRESET)
+    fd.append('folder', 'registro_sada')
+    try {
+      const res = await fetch(url, { method: 'POST', body: fd })
+      const data = await res.json()
+      if (data.secure_url) {
+        setForm(prev => ({ ...prev, assinatura_url: data.secure_url }))
+      } else {
+        setError('Erro ao enviar assinatura')
+      }
+    } catch {
+      setError('Erro ao conectar com Cloudinary')
+    } finally {
+      setSignatureUploading(false)
+    }
+  }
+
+  function handleSignatureEnd() {
+    if (sigRef.current && !sigRef.current.isEmpty()) {
+      const canvas = sigRef.current.getTrimmedCanvas()
+      canvas.toBlob(blob => { if (blob) uploadSignature(blob) })
+    }
+  }
+
+  function clearSignature() {
+    sigRef.current?.clear()
+    setForm(prev => ({ ...prev, assinatura_url: '' }))
+  }
+
   async function handleSubmit(e) {
     e.preventDefault()
     setError('')
 
     if (!form.foto1_url || !form.foto2_url || !form.foto3_url || !form.foto4_url) {
       setError('Todas as 4 fotos são obrigatórias. Tire uma foto do equipamento e do número de série.')
+      return
+    }
+
+    if (!form.assinatura_url) {
+      setError('Desenhe sua assinatura no campo abaixo')
       return
     }
 
@@ -263,6 +308,30 @@ export default function RegistroPage() {
             <div className="form-group">
               <label>Matrícula *</label>
               <input name="assinatura_matricula" value={form.assinatura_matricula} onChange={handleChange} required placeholder="Digite sua matrícula" />
+            </div>
+            <div className="form-group">
+              <label>Assinatura desenhada na tela *</label>
+              <div className="signature-wrapper">
+                {form.assinatura_url ? (
+                  <div className="signature-preview">
+                    <img src={form.assinatura_url} alt="Assinatura" />
+                    <button type="button" className="remove-foto" onClick={clearSignature}>&times;</button>
+                  </div>
+                ) : (
+                  <>
+                    <SignatureCanvas
+                      ref={sigRef}
+                      penColor="black"
+                      canvasProps={{ className: 'signature-canvas' }}
+                      onEnd={handleSignatureEnd}
+                    />
+                    {signatureUploading && <div className="uploading"><div className="spinner-sm" /><span>Enviando assinatura...</span></div>}
+                  </>
+                )}
+              </div>
+              {!form.assinatura_url && (
+                <button type="button" className="btn btn-sm btn-outline" style={{ marginTop: 8 }} onClick={clearSignature}>Limcar</button>
+              )}
             </div>
           </fieldset>
 
