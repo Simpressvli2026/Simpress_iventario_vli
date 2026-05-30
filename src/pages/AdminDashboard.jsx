@@ -146,7 +146,7 @@ function DetailModal({ registro, onClose, onEdit }) {
   )
 }
 
-function EditModal({ registro, onClose, onSave }) {
+function EditModal({ registro, onClose, onSave, demo }) {
   const [form, setForm] = useState({ nome: '', email: '', serial: '', modelo_notebook: '', setor: '', observacao: '', com_mochila: false, com_carregador: false, com_teclado: false, com_mouse: false, assinatura_nome: '', assinatura_matricula: '', tipo_atuacao: '', endereco_rua: '', endereco_bairro: '', endereco_cidade: '', endereco_cep: '' })
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
@@ -384,11 +384,21 @@ function PasswordModal({ onClose }) {
   )
 }
 
+const DEMO_MODE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+
+const DEMO_DATA = [
+  { id: 1, nome: 'Ana Silva', email: 'ana.silva@sada.com.br', serial: 'NB-2024-001', modelo_notebook: 'Dell Latitude 3420', setor: 'TI', tipo_atuacao: 'Presencial Fixo', endereco_rua: 'Rua A, 100', endereco_bairro: 'Centro', endereco_cidade: 'Uberlândia', endereco_cep: '38400-000', com_mochila: 1, com_carregador: 1, com_teclado: 0, com_mouse: 1, assinatura_nome: 'Ana Silva', assinatura_matricula: '12345', assinatura_url: '', observacao: 'Notebook novo', enviado_em: '2026-05-28T10:30:00', criado_em: '2026-05-25T08:00:00', foto1_url: '', foto2_url: '', foto3_url: '', foto4_url: '', token: 'abc123' },
+  { id: 2, nome: 'Carlos Oliveira', email: 'carlos.oliveira@sada.com.br', serial: 'NB-2024-002', modelo_notebook: 'Lenovo ThinkPad X1', setor: 'RH', tipo_atuacao: 'Híbrido', endereco_rua: 'Av B, 200', endereco_bairro: 'Jardim', endereco_cidade: 'Uberlândia', endereco_cep: '38401-000', com_mochila: 1, com_carregador: 1, com_teclado: 1, com_mouse: 1, assinatura_nome: 'Carlos Oliveira', assinatura_matricula: '12346', assinatura_url: '', observacao: '', enviado_em: '2026-05-28T14:00:00', criado_em: '2026-05-26T09:00:00', foto1_url: '', foto2_url: '', foto3_url: '', foto4_url: '', token: 'def456' },
+  { id: 3, nome: 'Maria Santos', email: 'maria.santos@sada.com.br', serial: 'NB-2024-003', modelo_notebook: 'HP EliteBook 840', setor: 'Financeiro', tipo_atuacao: 'Home Office', endereco_rua: 'Rua C, 300', endereco_bairro: 'Santa Maria', endereco_cidade: 'Uberlândia', endereco_cep: '38402-000', com_mochila: 1, com_carregador: 1, com_teclado: 0, com_mouse: 0, assinatura_nome: '', assinatura_matricula: '', assinatura_url: '', observacao: 'Aguardando assinatura', enviado_em: null, criado_em: '2026-05-27T10:00:00', foto1_url: '', foto2_url: '', foto3_url: '', foto4_url: '', token: 'ghi789' },
+  { id: 4, nome: 'Pedro Costa', email: 'pedro.costa@sada.com.br', serial: 'NB-2024-004', modelo_notebook: 'Dell XPS 13', setor: 'Marketing', tipo_atuacao: 'Presencial Fixo', endereco_rua: 'Av D, 400', endereco_bairro: 'Centro', endereco_cidade: 'Uberlândia', endereco_cep: '38400-100', com_mochila: 0, com_carregador: 1, com_teclado: 0, com_mouse: 0, assinatura_nome: '', assinatura_matricula: '', assinatura_url: '', observacao: '', enviado_em: null, criado_em: '2026-05-27T14:00:00', foto1_url: '', foto2_url: '', foto3_url: '', foto4_url: '', token: 'jkl012' },
+  { id: 5, nome: 'Juliana Lima', email: 'juliana.lima@sada.com.br', serial: 'NB-2024-005', modelo_notebook: 'Lenovo ThinkPad T14', setor: 'Diretoria', tipo_atuacao: 'Híbrido', endereco_rua: 'Rua E, 500', endereco_bairro: 'Alto Paraná', endereco_cidade: 'Uberlândia', endereco_cep: '38403-000', com_mochila: 1, com_carregador: 1, com_teclado: 0, com_mouse: 1, assinatura_nome: 'Juliana Lima', assinatura_matricula: '12347', assinatura_url: '', observacao: 'Preferência teclado externo', enviado_em: '2026-05-29T09:00:00', criado_em: '2026-05-26T11:00:00', foto1_url: '', foto2_url: '', foto3_url: '', foto4_url: '', token: 'mno345' },
+]
+
 export default function AdminDashboard() {
-  const [allRegistros, setAllRegistros] = useState([])
+  const [allRegistros, setAllRegistros] = useState(DEMO_MODE ? DEMO_DATA : [])
   const [busca, setBusca] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(!DEMO_MODE)
   const [error, setError] = useState('')
   const [selectedFoto, setSelectedFoto] = useState(null)
   const [detailRegistro, setDetailRegistro] = useState(null)
@@ -403,6 +413,7 @@ export default function AdminDashboard() {
   const token = localStorage.getItem('admin_token')
 
   const fetchRegistros = useCallback(async () => {
+    if (DEMO_MODE) return
     if (!token) return
     const data = await listarRegistros(token)
     if (data.registros) {
@@ -418,6 +429,7 @@ export default function AdminDashboard() {
   }, [token])
 
   useEffect(() => {
+    if (DEMO_MODE) { setLoading(false); return }
     if (!token) { navigate('/admin/login'); return }
     setLoading(true)
     fetchRegistros().then(() => setLoading(false))
@@ -449,6 +461,7 @@ export default function AdminDashboard() {
   }, [allRegistros, busca, statusFilter])
 
   async function handleRowClick(r) {
+    if (DEMO_MODE) { setDetailRegistro(r); return }
     const data = await getRegistro(token, r.id)
     if (data.registro) setDetailRegistro(data.registro)
   }
@@ -460,6 +473,11 @@ export default function AdminDashboard() {
   async function handleGerarConvite() {
     setGerandoConvite(true)
     setConviteLink('')
+    if (DEMO_MODE) {
+      setConviteLink(`${window.location.origin}/registrar/demo-token-${Date.now()}`)
+      setGerandoConvite(false)
+      return
+    }
     const data = await gerarConvite(token)
     if (data.link) {
       setConviteLink(data.link)
@@ -512,12 +530,16 @@ export default function AdminDashboard() {
     <div className="admin-layout">
       <header className="admin-header">
         <div className="admin-header-content">
-          <h1>SADA &mdash; Registro de Notebooks</h1>
+          <div className="admin-header-left">
+            <img src="/logo-simpress.png" alt="Simpress" className="admin-header-logo" />
+            <div className="admin-header-divider" />
+            <h1>Registro de Notebooks</h1>
+          </div>
           <div className="admin-header-actions">
-            <button className="btn btn-sm" onClick={() => navigate('/admin/enviar')}>Links</button>
-            <button className="btn btn-sm btn-outline" onClick={handleGerarConvite} disabled={gerandoConvite}>{gerandoConvite ? 'Gerando...' : 'Link Convidado'}</button>
-            <button className="btn btn-sm btn-outline" onClick={() => setShowPasswordModal(true)}>Alterar Senha</button>
-            <button className="btn btn-sm btn-outline" onClick={handleLogout}>Sair</button>
+            <button className="btn" onClick={() => navigate('/admin/enviar')}>Links</button>
+            <button className="btn" onClick={handleGerarConvite} disabled={gerandoConvite}>{gerandoConvite ? 'Gerando...' : 'Link Convidado'}</button>
+            <button className="btn" onClick={() => setShowPasswordModal(true)}>Alterar Senha</button>
+            <button className="btn btn-logout" onClick={handleLogout}>Sair</button>
           </div>
         </div>
       </header>

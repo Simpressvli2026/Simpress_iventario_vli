@@ -25,10 +25,17 @@ export default function AdminLogin() {
   }
 
   return (
-    <div className="page-center">
+    <div className="page-center login-bg">
       <div className="card login-card">
-        <div className="logo">SADA</div>
-        <h2>Admin - Registro de Notebooks</h2>
+        <div className="logo">
+          <div className="logo-simpress-wrapper">
+            <img src="/logo-simpress.png" alt="Simpress" className="logo-img" />
+            <span className="logo-hp">an HP Company</span>
+          </div>
+          <img src="/logo-grupo-sada.png" alt="Grupo SADA" className="logo-img logo-sada" />
+        </div>
+        <h2>Registro de Notebooks</h2>
+        <p className="subtitle">Entre com suas credenciais de administrador</p>
 
         {error && <div className="alert alert-error">{error}</div>}
 
@@ -39,7 +46,8 @@ export default function AdminLogin() {
               value={username}
               onChange={e => setUsername(e.target.value)}
               required
-              placeholder="admin"
+              placeholder="Digite seu usuário"
+              autoFocus
             />
           </div>
           <div className="form-group">
@@ -49,11 +57,13 @@ export default function AdminLogin() {
               value={password}
               onChange={e => setPassword(e.target.value)}
               required
-              placeholder="******"
+              placeholder="Digite sua senha"
             />
           </div>
           <button type="submit" className="btn btn-primary btn-full" disabled={loading}>
-            {loading ? 'Entrando...' : 'Entrar'}
+            {loading ? (
+              <><span className="spinner-sm" style={{ borderTopColor: 'white', borderColor: 'rgba(255,255,255,0.3)' }} /> Entrando...</>
+            ) : 'Entrar'}
           </button>
         </form>
       </div>
