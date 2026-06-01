@@ -44,6 +44,8 @@ const CHECKLIST_P3 = [
   { id: 'check_identificar_caixa', label: 'Identificar caixa (nome do usuário + série)' },
 ]
 
+const FOTO_COUNT = 6
+
 function buildInitialForm() {
   const f = {
     tecnico_nome: '',
@@ -51,7 +53,7 @@ function buildInitialForm() {
     monitor_novo_serial: '',
     notebook_antigo_serial: '',
     notebook_antigo_estado: '',
-    foto1_url: '', foto2_url: '', foto3_url: '', foto4_url: '',
+    foto1_url: '', foto2_url: '', foto3_url: '', foto4_url: '', foto5_url: '', foto6_url: '',
     assinatura_nome: '',
     assinatura_matricula: '',
     assinatura_url: '',
@@ -67,12 +69,13 @@ export default function RegistroPage() {
   const [submitting, setSubmitting] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState('')
-  const [uploading, setUploading] = useState([false, false, false, false])
-  const [previews, setPreviews] = useState([null, null, null, null])
+  const [uploading, setUploading] = useState(Array(FOTO_COUNT).fill(false))
+  const [previews, setPreviews] = useState(Array(FOTO_COUNT).fill(null))
   const [signatureUploading, setSignatureUploading] = useState(false)
-  const cameraInputs = [useRef(), useRef(), useRef(), useRef()]
-  const galleryInputs = [useRef(), useRef(), useRef(), useRef()]
+  const cameraInputs = Array.from({ length: FOTO_COUNT }, () => useRef())
+  const galleryInputs = Array.from({ length: FOTO_COUNT }, () => useRef())
   const sigRef = useRef()
+  const formRef = useRef()
 
   function handleChange(e) {
     const { name, value, type, checked } = e.target
@@ -151,37 +154,46 @@ export default function RegistroPage() {
     e.preventDefault()
     setError('')
 
+    const checklistAll = [...CHECKLIST_P1, ...CHECKLIST_P2, ...CHECKLIST_P3]
+    const unchecked = checklistAll.filter(item => !form[item.id])
+    if (unchecked.length > 0) {
+      setError(`Todos os itens do checklist devem ser confirmados. Faltam ${unchecked.length} item(ns).`)
+      formRef.current?.scrollIntoView({ behavior: 'smooth' })
+      return
+    }
+
+    const missingFotos = Array.from({ length: FOTO_COUNT }, (_, i) => form[`foto${i + 1}_url`]).filter(Boolean).length
+    if (missingFotos < FOTO_COUNT && !DEMO_MODE) { setError('Todas as 6 fotos são obrigatórias'); formRef.current?.scrollIntoView({ behavior: 'smooth' }); return }
+    if (!form.assinatura_url) { setError('Desenhe sua assinatura no campo abaixo'); formRef.current?.scrollIntoView({ behavior: 'smooth' }); return }
+
     if (DEMO_MODE) {
       const saved = JSON.parse(localStorage.getItem('vli_registros') || '[]')
       saved.unshift({ ...form, criado_em: new Date().toISOString(), id: Date.now() })
       localStorage.setItem('vli_registros', JSON.stringify(saved))
       setSuccess(true)
+      setTimeout(() => {
+        setSuccess(false)
+        setForm(buildInitialForm())
+        setPreviews(Array(FOTO_COUNT).fill(null))
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+      }, 2000)
       return
     }
 
-    if (!form.assinatura_url) { setError('Desenhe sua assinatura no campo abaixo'); return }
     setSubmitting(true)
     try {
       const result = await registrarPublico(form)
-      if (result.sucesso) { setSuccess(true) }
-      else { setError(result.error || 'Erro ao registrar') }
+      if (result.sucesso) {
+        setSuccess(true)
+        setTimeout(() => {
+          setSuccess(false)
+          setForm(buildInitialForm())
+          setPreviews(Array(FOTO_COUNT).fill(null))
+          window.scrollTo({ top: 0, behavior: 'smooth' })
+        }, 2000)
+      } else { setError(result.error || 'Erro ao registrar') }
     } catch (err) { setError('Erro de conexão: ' + (err.message || 'erro inesperado')) }
     setSubmitting(false)
-  }
-
-  if (success) {
-    return (
-      <div className="page-center vli-bg">
-        <div className="card success-card">
-          <div className="success-icon">&#10003;</div>
-          <h2>Rollout VLI concluído com sucesso!</h2>
-          <p>Checklist finalizado. O equipamento foi registrado no sistema.</p>
-          <button className="btn btn-primary" style={{ marginTop: 20 }} onClick={() => { setSuccess(false); setForm(buildInitialForm()); setPreviews([null, null, null, null]) }}>
-            Novo Registro
-          </button>
-        </div>
-      </div>
-    )
   }
 
   return (
@@ -196,9 +208,14 @@ export default function RegistroPage() {
         <h2>Checklist de Preparação e Entrega</h2>
         <p className="subtitle">Preencha todos os campos e confirme cada etapa do processo</p>
 
+        {success && (
+          <div className="alert alert-success" style={{ textAlign: 'center', padding: '16px', fontSize: 15, fontWeight: 700 }}>
+            &#10003; Concluído com sucesso! O formulário será limpo...
+          </div>
+        )}
         {error && <div className="alert alert-error">{error}</div>}
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} ref={formRef}>
           {/* INITIAL FIELDS */}
           <fieldset className="form-fieldset">
             <legend>Dados do Técnico e Equipamentos</legend>
@@ -212,8 +229,8 @@ export default function RegistroPage() {
                 <input name="notebook_novo_serial" value={form.notebook_novo_serial} onChange={handleChange} required placeholder="Ex: 5CGXXXX" />
               </div>
               <div className="form-group">
-                <label>Série do monitor novo</label>
-                <input name="monitor_novo_serial" value={form.monitor_novo_serial} onChange={handleChange} placeholder="Ex: ABC123" />
+                <label>Série do monitor novo *</label>
+                <input name="monitor_novo_serial" value={form.monitor_novo_serial} onChange={handleChange} required placeholder="Ex: ABC123" />
               </div>
             </div>
             <div className="form-group">
@@ -232,7 +249,7 @@ export default function RegistroPage() {
             <div className="form-group">
               <label>Fotos do equipamento novo (com nº de série) e do equipamento antigo (estado e nº de série)</label>
               <div className="fotos-grid">
-                {[0, 1, 2, 3].map(i => (
+                {Array.from({ length: FOTO_COUNT }, (_, i) => i).map(i => (
                   <div key={i} className="foto-item">
                     <div className="foto-upload">
                       <input ref={cameraInputs[i]} type="file" accept="image/*" capture="environment" hidden onChange={() => handleUpload(i, cameraInputs[i])} />
@@ -260,8 +277,10 @@ export default function RegistroPage() {
                     <div className="foto-legenda">
                       {i === 0 && <span>Equipamento novo — vista frontal</span>}
                       {i === 1 && <span>Equipamento novo — número de série</span>}
-                      {i === 2 && <span>Equipamento antigo — estado geral</span>}
-                      {i === 3 && <span>Equipamento antigo — número de série</span>}
+                      {i === 2 && <span>Monitor novo — número de série</span>}
+                      {i === 3 && <span>Equipamento antigo — estado geral</span>}
+                      {i === 4 && <span>Equipamento antigo — número de série</span>}
+                      {i === 5 && <span>Monitor antigo — número de série</span>}
                     </div>
                   </div>
                 ))}
