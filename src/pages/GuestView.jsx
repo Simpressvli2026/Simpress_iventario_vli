@@ -2,6 +2,27 @@ import { useState, useEffect, useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { visualizarConvidado } from '../lib/api'
 
+const CHECKLIST_P1 = [
+  'check_integridade_fisica', 'check_relatorio_bateria', 'check_bios_senha', 'check_secure_boot',
+  'check_login_local', 'check_hostname', 'check_dominio', 'check_ou_correta', 'check_gpupdate',
+  'check_ativacao_windows', 'check_rede', 'check_remover_hp_support', 'check_instalar_hp_image',
+  'check_atualizar_drivers_bios', 'check_ativar_hp_wxp', 'check_config_manager', 'check_bitlocker',
+  'check_limpar_equipamento',
+]
+const CHECKLIST_P2 = [
+  'check_backup_onedrive', 'check_instalar_softwares', 'check_validar_softwares', 'check_office_teams',
+  'check_sincronizar_conta', 'check_migrar_certificados', 'check_fila_impressao', 'check_config_gerais',
+  'check_assinatura_termo',
+]
+const CHECKLIST_P3 = [
+  'check_embalar_antigo', 'check_identificar_caixa',
+]
+const CHECKLIST_ALL = [...CHECKLIST_P1, ...CHECKLIST_P2, ...CHECKLIST_P3]
+
+function countChecks(r, list) {
+  return list.filter(c => Number(r[c])).length
+}
+
 export default function GuestView() {
   const { token } = useParams()
   const navigate = useNavigate()
@@ -51,20 +72,16 @@ export default function GuestView() {
     )
   }
 
-  function acessoriosText(r) {
-    const items = []
-    if (Number(r.com_mochila)) items.push('Mochila')
-    if (Number(r.com_carregador)) items.push('Carregador')
-    if (Number(r.com_teclado)) items.push('Teclado')
-    if (Number(r.com_mouse)) items.push('Mouse')
-    return items.length ? items.join(', ') : '-'
+  function checklistSummary(r) {
+    const total = countChecks(r, CHECKLIST_ALL)
+    return `${total}/${CHECKLIST_ALL.length}`
   }
 
   return (
     <div className="admin-layout">
       <header className="admin-header">
         <div className="admin-header-content">
-          <h1>SADA &mdash; Visualização de Registros</h1>
+          <h1>Rollout VLI &mdash; Visualização</h1>
           <span style={{ fontSize: 13, opacity: 0.7 }}>Modo convidado &mdash; apenas visualização</span>
         </div>
       </header>
@@ -76,7 +93,7 @@ export default function GuestView() {
             <div className="stat-value">{stats.total}</div>
           </div>
           <div className="stat-card stat-ok">
-            <div className="stat-label">Registrados</div>
+            <div className="stat-label">Concluídos</div>
             <div className="stat-value">{stats.registrados}</div>
           </div>
           <div className="stat-card stat-pending">
@@ -89,33 +106,28 @@ export default function GuestView() {
           <table className="admin-table">
             <thead>
               <tr>
-                <th>Nome</th>
-                <th>Email</th>
-                <th>Serial</th>
-                <th>Modelo</th>
-                <th>Setor</th>
-                <th>Atuação</th>
-                <th>Acessórios</th>
+                <th>Técnico</th>
+                <th>Usuário</th>
+                <th>Notebook Novo</th>
+                <th>Notebook Antigo</th>
+                <th>Checklist</th>
                 <th>Assinatura</th>
-                <th>Observações</th>
-                <th>Data</th>
                 <th>Fotos</th>
+                <th>Data</th>
                 <th>Status</th>
               </tr>
             </thead>
             <tbody>
               {registros.length === 0 ? (
-                <tr><td colSpan="12" className="empty">Nenhum registro encontrado</td></tr>
+                <tr><td colSpan="9" className="empty">Nenhum registro encontrado</td></tr>
               ) : (
                 registros.map(r => (
                   <tr key={r.id}>
-                    <td className="cell-name">{r.nome || '-'}</td>
-                    <td>{r.email || '-'}</td>
-                    <td><code>{r.serial}</code></td>
-                    <td>{r.modelo_notebook || '-'}</td>
-                    <td style={{ fontSize: 13 }}>{r.setor || '-'}</td>
-                    <td style={{ fontSize: 13 }}>{r.tipo_atuacao || '-'}</td>
-                    <td style={{ fontSize: 12 }}>{acessoriosText(r)}</td>
+                    <td className="cell-name">{r.tecnico_nome || '-'}</td>
+                    <td style={{ fontSize: 12 }}>{r.nome || '-'}</td>
+                    <td><code style={{ fontSize: 12 }}>{r.notebook_novo_serial || '-'}</code></td>
+                    <td><code style={{ fontSize: 12 }}>{r.notebook_antigo_serial || '-'}</code></td>
+                    <td style={{ fontSize: 12, fontWeight: 600 }}>{checklistSummary(r)}</td>
                     <td style={{ fontSize: 12 }}>
                       {r.assinatura_url ? (
                         <img src={r.assinatura_url} alt="Ass" className="foto-thumb" style={{ width: 28, height: 28 }} title={`${r.assinatura_nome || ''} - ${r.assinatura_matricula || ''}`} />
@@ -123,10 +135,6 @@ export default function GuestView() {
                         <span style={{ fontSize: 11, color: 'var(--gray-400)' }}>{r.assinatura_nome ? `${r.assinatura_nome.slice(0, 15)}...` : '-'}</span>
                       )}
                     </td>
-                    <td style={{ fontSize: 12, maxWidth: 150, overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                      {r.observacao || '-'}
-                    </td>
-                    <td className="cell-date">{new Date(r.enviado_em || r.criado_em).toLocaleString('pt-BR')}</td>
                     <td>
                       <div className="foto-thumbs">
                         {[r.foto1_url, r.foto2_url, r.foto3_url, r.foto4_url].filter(Boolean).map((url, i) => (
@@ -135,9 +143,10 @@ export default function GuestView() {
                         {![r.foto1_url, r.foto2_url, r.foto3_url, r.foto4_url].some(Boolean) && <span className="no-fotos">-</span>}
                       </div>
                     </td>
+                    <td className="cell-date">{new Date(r.enviado_em || r.criado_em).toLocaleString('pt-BR')}</td>
                     <td>
                       <span className={`status-badge ${r.enviado_em ? 'status-ok' : 'status-pendente'}`}>
-                        {r.enviado_em ? 'Registrado' : 'Pendente'}
+                        {r.enviado_em ? 'Concluído' : 'Pendente'}
                       </span>
                     </td>
                   </tr>

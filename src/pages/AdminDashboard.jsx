@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { listarRegistros, getRegistro, editarRegistro, deletarRegistro, alterarSenha, gerarConvite } from '../lib/api'
 import * as XLSX from 'xlsx'
 
-const TOTAL_NOTEBOOKS = 10000
+const TOTAL_NOTEBOOKS = 4000
 
 function playNotificationSound() {
   try {
@@ -51,49 +51,71 @@ function Toast({ message, onClose }) {
   )
 }
 
+function countChecks(r, list) {
+  return list.filter(c => Number(r[c])).length
+}
+
 function DetailModal({ registro, onClose, onEdit }) {
   if (!registro) return null
   const fotos = [registro.foto1_url, registro.foto2_url, registro.foto3_url, registro.foto4_url].filter(Boolean)
+
+  const p1 = countChecks(registro, CHECKLIST_P1)
+  const p2 = countChecks(registro, CHECKLIST_P2)
+  const p3 = countChecks(registro, CHECKLIST_P3)
+  const total = p1 + p2 + p3
+  const totalMax = CHECKLIST_ALL.length
 
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content modal-lg" onClick={e => e.stopPropagation()}>
         <button className="modal-close" onClick={onClose}>&times;</button>
-        <h2 className="modal-title">Detalhes do Registro</h2>
+        <h2 className="modal-title">Detalhes do Rollout VLI</h2>
 
         <div className="detail-grid">
-          <div className="detail-field">
-            <span className="detail-label">Nome</span>
-            <span className="detail-value">{registro.nome}</span>
+          <div className="detail-field" style={{ gridColumn: '1 / -1' }}>
+            <span className="detail-label">Técnico Responsável</span>
+            <span className="detail-value">{registro.tecnico_nome || '-'}</span>
           </div>
           <div className="detail-field">
-            <span className="detail-label">Email</span>
-            <span className="detail-value">{registro.email}</span>
+            <span className="detail-label">Notebook Novo (Série)</span>
+            <span className="detail-value"><code>{registro.notebook_novo_serial || '-'}</code></span>
           </div>
           <div className="detail-field">
-            <span className="detail-label">Serial</span>
-            <span className="detail-value"><code>{registro.serial}</code></span>
+            <span className="detail-label">Monitor Novo (Série)</span>
+            <span className="detail-value"><code>{registro.monitor_novo_serial || '-'}</code></span>
           </div>
           <div className="detail-field">
-            <span className="detail-label">Modelo</span>
-            <span className="detail-value">{registro.modelo_notebook || '-'}</span>
-          </div>
-          <div className="detail-field">
-            <span className="detail-label">Setor</span>
-            <span className="detail-value">{registro.setor || '-'}</span>
-          </div>
-          <div className="detail-field">
-            <span className="detail-label">Tipo de Atuação</span>
-            <span className="detail-value">{registro.tipo_atuacao || '-'}</span>
+            <span className="detail-label">Notebook Antigo (Série)</span>
+            <span className="detail-value"><code>{registro.notebook_antigo_serial || '-'}</code></span>
           </div>
           <div className="detail-field" style={{ gridColumn: '1 / -1' }}>
-            <span className="detail-label">Endereço</span>
-            <span className="detail-value">
-              {[registro.endereco_rua, registro.endereco_bairro, registro.endereco_cidade, registro.endereco_cep].filter(Boolean).join(', ') || '-'}
-            </span>
+            <span className="detail-label">Usuário</span>
+            <span className="detail-value">{registro.nome || '-'} ({registro.email || '-'})</span>
           </div>
           <div className="detail-field" style={{ gridColumn: '1 / -1' }}>
-            <span className="detail-label">Assinatura de Recebimento</span>
+            <span className="detail-label">Estado do Notebook Antigo</span>
+            <span className="detail-value">{registro.notebook_antigo_estado || '-'}</span>
+          </div>
+
+          <div className="detail-field" style={{ gridColumn: '1 / -1' }}>
+            <span className="detail-label">Checklist — Fase 1 (Preparação)</span>
+            <span className="detail-value">{p1}/{CHECKLIST_P1.length} itens concluídos</span>
+          </div>
+          <div className="detail-field" style={{ gridColumn: '1 / -1' }}>
+            <span className="detail-label">Checklist — Fase 2 (Entrega)</span>
+            <span className="detail-value">{p2}/{CHECKLIST_P2.length} itens concluídos</span>
+          </div>
+          <div className="detail-field" style={{ gridColumn: '1 / -1' }}>
+            <span className="detail-label">Checklist — Fase 3 (Pós-Entrega)</span>
+            <span className="detail-value">{p3}/{CHECKLIST_P3.length} itens concluídos</span>
+          </div>
+          <div className="detail-field" style={{ gridColumn: '1 / -1' }}>
+            <span className="detail-label">Total do Checklist</span>
+            <span className="detail-value">{total}/{totalMax} ({totalMax > 0 ? Math.round(total/totalMax*100) : 0}%)</span>
+          </div>
+
+          <div className="detail-field" style={{ gridColumn: '1 / -1' }}>
+            <span className="detail-label">Assinatura do Técnico</span>
             <span className="detail-value" style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
               <span><strong>Nome:</strong> {registro.assinatura_nome || '-'}</span>
               <span><strong>Matrícula:</strong> {registro.assinatura_matricula || '-'}</span>
@@ -103,19 +125,9 @@ function DetailModal({ registro, onClose, onEdit }) {
             </span>
           </div>
           <div className="detail-field">
-            <span className="detail-label">Acessórios</span>
-            <span className="detail-value">
-              {[registro.com_mochila && 'Mochila', registro.com_carregador && 'Carregador', registro.com_teclado && 'Teclado', registro.com_mouse && 'Mouse'].filter(Boolean).join(', ') || '-'}
-            </span>
-          </div>
-          <div className="detail-field" style={{ gridColumn: '1 / -1' }}>
-            <span className="detail-label">Observações</span>
-            <span className="detail-value">{registro.observacao || '-'}</span>
-          </div>
-          <div className="detail-field">
             <span className="detail-label">Status</span>
             <span className={`status-badge ${registro.enviado_em ? 'status-ok' : 'status-pendente'}`}>
-              {registro.enviado_em ? 'Registrado' : 'Pendente'}
+              {registro.enviado_em ? 'Concluído' : 'Pendente'}
             </span>
           </div>
           <div className="detail-field">
@@ -147,13 +159,13 @@ function DetailModal({ registro, onClose, onEdit }) {
 }
 
 function EditModal({ registro, onClose, onSave, demo }) {
-  const [form, setForm] = useState({ nome: '', email: '', serial: '', modelo_notebook: '', setor: '', observacao: '', com_mochila: false, com_carregador: false, com_teclado: false, com_mouse: false, assinatura_nome: '', assinatura_matricula: '', tipo_atuacao: '', endereco_rua: '', endereco_bairro: '', endereco_cidade: '', endereco_cep: '' })
+  const [form, setForm] = useState({ nome: '', email: '', serial: '', modelo_notebook: '', setor: '', observacao: '', com_mochila: false, com_carregador: false, com_teclado: false, com_mouse: false, assinatura_nome: '', assinatura_matricula: '', tipo_atuacao: '', endereco_rua: '', endereco_bairro: '', endereco_cidade: '', endereco_cep: '', tecnico_nome: '', notebook_novo_serial: '', monitor_novo_serial: '', notebook_antigo_serial: '', notebook_antigo_estado: '' })
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
 
   useEffect(() => {
     if (registro) {
-      setForm({
+      const f = {
         nome: registro.nome || '',
         email: registro.email || '',
         serial: registro.serial || '',
@@ -171,7 +183,13 @@ function EditModal({ registro, onClose, onSave, demo }) {
         endereco_bairro: registro.endereco_bairro || '',
         endereco_cidade: registro.endereco_cidade || '',
         endereco_cep: registro.endereco_cep || '',
-      })
+        tecnico_nome: registro.tecnico_nome || '',
+        notebook_novo_serial: registro.notebook_novo_serial || '',
+        monitor_novo_serial: registro.monitor_novo_serial || '',
+        notebook_antigo_serial: registro.notebook_antigo_serial || '',
+        notebook_antigo_estado: registro.notebook_antigo_estado || '',
+      }
+      setForm(f)
     }
   }, [registro])
 
@@ -275,6 +293,30 @@ function EditModal({ registro, onClose, onSave, demo }) {
           <div className="form-group">
             <label>Observações</label>
             <textarea value={form.observacao} onChange={e => setForm({ ...form, observacao: e.target.value })} rows={3} />
+          </div>
+          <hr style={{ margin: '12px 0', border: 'none', borderTop: '1px solid var(--gray-200)' }} />
+          <h4 style={{ fontSize: 13, fontWeight: 700, color: 'var(--gray-700)', marginBottom: 12 }}>Dados do Rollout VLI</h4>
+          <div className="form-group">
+            <label>Técnico Responsável</label>
+            <input value={form.tecnico_nome} onChange={e => setForm({ ...form, tecnico_nome: e.target.value })} />
+          </div>
+          <div className="form-row">
+            <div className="form-group">
+              <label>Notebook Novo (Série)</label>
+              <input value={form.notebook_novo_serial} onChange={e => setForm({ ...form, notebook_novo_serial: e.target.value })} />
+            </div>
+            <div className="form-group">
+              <label>Monitor Novo (Série)</label>
+              <input value={form.monitor_novo_serial} onChange={e => setForm({ ...form, monitor_novo_serial: e.target.value })} />
+            </div>
+          </div>
+          <div className="form-group">
+            <label>Notebook Antigo (Série)</label>
+            <input value={form.notebook_antigo_serial} onChange={e => setForm({ ...form, notebook_antigo_serial: e.target.value })} />
+          </div>
+          <div className="form-group">
+            <label>Estado do Notebook Antigo</label>
+            <textarea value={form.notebook_antigo_estado} onChange={e => setForm({ ...form, notebook_antigo_estado: e.target.value })} rows={2} />
           </div>
           <div className="modal-actions">
             <button type="submit" className="btn btn-sm" disabled={saving}>{saving ? 'Salvando...' : 'Salvar'}</button>
@@ -386,16 +428,34 @@ function PasswordModal({ onClose }) {
 
 const DEMO_MODE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
 
+const CHECKLIST_P1 = [
+  'check_integridade_fisica', 'check_relatorio_bateria', 'check_bios_senha', 'check_secure_boot',
+  'check_login_local', 'check_hostname', 'check_dominio', 'check_ou_correta', 'check_gpupdate',
+  'check_ativacao_windows', 'check_rede', 'check_remover_hp_support', 'check_instalar_hp_image',
+  'check_atualizar_drivers_bios', 'check_ativar_hp_wxp', 'check_config_manager', 'check_bitlocker',
+  'check_limpar_equipamento',
+]
+const CHECKLIST_P2 = [
+  'check_backup_onedrive', 'check_instalar_softwares', 'check_validar_softwares', 'check_office_teams',
+  'check_sincronizar_conta', 'check_migrar_certificados', 'check_fila_impressao', 'check_config_gerais',
+  'check_assinatura_termo',
+]
+const CHECKLIST_P3 = [
+  'check_embalar_antigo', 'check_identificar_caixa',
+]
+const CHECKLIST_ALL = [...CHECKLIST_P1, ...CHECKLIST_P2, ...CHECKLIST_P3]
+
 const DEMO_DATA = [
-  { id: 1, nome: 'Ana Silva', email: 'ana.silva@sada.com.br', serial: 'NB-2024-001', modelo_notebook: 'Dell Latitude 3420', setor: 'TI', tipo_atuacao: 'Presencial Fixo', endereco_rua: 'Rua A, 100', endereco_bairro: 'Centro', endereco_cidade: 'Uberlândia', endereco_cep: '38400-000', com_mochila: 1, com_carregador: 1, com_teclado: 0, com_mouse: 1, assinatura_nome: 'Ana Silva', assinatura_matricula: '12345', assinatura_url: '', observacao: 'Notebook novo', enviado_em: '2026-05-28T10:30:00', criado_em: '2026-05-25T08:00:00', foto1_url: '', foto2_url: '', foto3_url: '', foto4_url: '', token: 'abc123' },
-  { id: 2, nome: 'Carlos Oliveira', email: 'carlos.oliveira@sada.com.br', serial: 'NB-2024-002', modelo_notebook: 'Lenovo ThinkPad X1', setor: 'RH', tipo_atuacao: 'Híbrido', endereco_rua: 'Av B, 200', endereco_bairro: 'Jardim', endereco_cidade: 'Uberlândia', endereco_cep: '38401-000', com_mochila: 1, com_carregador: 1, com_teclado: 1, com_mouse: 1, assinatura_nome: 'Carlos Oliveira', assinatura_matricula: '12346', assinatura_url: '', observacao: '', enviado_em: '2026-05-28T14:00:00', criado_em: '2026-05-26T09:00:00', foto1_url: '', foto2_url: '', foto3_url: '', foto4_url: '', token: 'def456' },
-  { id: 3, nome: 'Maria Santos', email: 'maria.santos@sada.com.br', serial: 'NB-2024-003', modelo_notebook: 'HP EliteBook 840', setor: 'Financeiro', tipo_atuacao: 'Home Office', endereco_rua: 'Rua C, 300', endereco_bairro: 'Santa Maria', endereco_cidade: 'Uberlândia', endereco_cep: '38402-000', com_mochila: 1, com_carregador: 1, com_teclado: 0, com_mouse: 0, assinatura_nome: '', assinatura_matricula: '', assinatura_url: '', observacao: 'Aguardando assinatura', enviado_em: null, criado_em: '2026-05-27T10:00:00', foto1_url: '', foto2_url: '', foto3_url: '', foto4_url: '', token: 'ghi789' },
-  { id: 4, nome: 'Pedro Costa', email: 'pedro.costa@sada.com.br', serial: 'NB-2024-004', modelo_notebook: 'Dell XPS 13', setor: 'Marketing', tipo_atuacao: 'Presencial Fixo', endereco_rua: 'Av D, 400', endereco_bairro: 'Centro', endereco_cidade: 'Uberlândia', endereco_cep: '38400-100', com_mochila: 0, com_carregador: 1, com_teclado: 0, com_mouse: 0, assinatura_nome: '', assinatura_matricula: '', assinatura_url: '', observacao: '', enviado_em: null, criado_em: '2026-05-27T14:00:00', foto1_url: '', foto2_url: '', foto3_url: '', foto4_url: '', token: 'jkl012' },
-  { id: 5, nome: 'Juliana Lima', email: 'juliana.lima@sada.com.br', serial: 'NB-2024-005', modelo_notebook: 'Lenovo ThinkPad T14', setor: 'Diretoria', tipo_atuacao: 'Híbrido', endereco_rua: 'Rua E, 500', endereco_bairro: 'Alto Paraná', endereco_cidade: 'Uberlândia', endereco_cep: '38403-000', com_mochila: 1, com_carregador: 1, com_teclado: 0, com_mouse: 1, assinatura_nome: 'Juliana Lima', assinatura_matricula: '12347', assinatura_url: '', observacao: 'Preferência teclado externo', enviado_em: '2026-05-29T09:00:00', criado_em: '2026-05-26T11:00:00', foto1_url: '', foto2_url: '', foto3_url: '', foto4_url: '', token: 'mno345' },
+  { id: 1, tecnico_nome: 'João Técnico', notebook_novo_serial: '5CG12345', monitor_novo_serial: 'MON001', notebook_antigo_serial: '5CG98765', notebook_antigo_estado: 'Bom estado, pequenos arranhões na tampa', nome: 'Ana Silva', email: 'ana.silga@vli.com.br', serial: '5CG12345', assinatura_nome: 'João Técnico', assinatura_matricula: '12345', assinatura_url: '', enviado_em: '2026-05-28T10:30:00', criado_em: '2026-05-25T08:00:00', foto1_url: '', foto2_url: '', foto3_url: '', foto4_url: '', token: 'abc123', check_integridade_fisica: 1, check_relatorio_bateria: 1, check_bios_senha: 1, check_secure_boot: 1, check_login_local: 1, check_hostname: 1, check_dominio: 1, check_ou_correta: 1, check_gpupdate: 1, check_ativacao_windows: 1, check_rede: 1, check_remover_hp_support: 1, check_instalar_hp_image: 1, check_atualizar_drivers_bios: 1, check_ativar_hp_wxp: 1, check_config_manager: 1, check_bitlocker: 1, check_limpar_equipamento: 1, check_backup_onedrive: 1, check_instalar_softwares: 1, check_validar_softwares: 1, check_office_teams: 1, check_sincronizar_conta: 1, check_migrar_certificados: 1, check_fila_impressao: 1, check_config_gerais: 1, check_assinatura_termo: 1, check_embalar_antigo: 1, check_identificar_caixa: 1 },
+  { id: 2, tecnico_nome: 'Maria Técnica', notebook_novo_serial: '5CG54321', monitor_novo_serial: 'MON002', notebook_antigo_serial: '5CG11111', notebook_antigo_estado: 'Tela com risco, teclado funcionando', nome: 'Carlos Oliveira', email: 'carlos@vli.com.br', serial: '5CG54321', assinatura_nome: 'Maria Técnica', assinatura_matricula: '12346', assinatura_url: '', enviado_em: null, criado_em: '2026-05-26T09:00:00', foto1_url: '', foto2_url: '', foto3_url: '', foto4_url: '', token: 'def456', check_integridade_fisica: 1, check_relatorio_bateria: 1, check_bios_senha: 1, check_secure_boot: 1, check_login_local: 1, check_hostname: 0, check_dominio: 0, check_ou_correta: 0, check_gpupdate: 0, check_ativacao_windows: 0, check_rede: 0, check_remover_hp_support: 0, check_instalar_hp_image: 0, check_atualizar_drivers_bios: 0, check_ativar_hp_wxp: 0, check_config_manager: 0, check_bitlocker: 0, check_limpar_equipamento: 0, check_backup_onedrive: 0, check_instalar_softwares: 0, check_validar_softwares: 0, check_office_teams: 0, check_sincronizar_conta: 0, check_migrar_certificados: 0, check_fila_impressao: 0, check_config_gerais: 0, check_assinatura_termo: 0, check_embalar_antigo: 0, check_identificar_caixa: 0 },
 ]
 
 export default function AdminDashboard() {
-  const [allRegistros, setAllRegistros] = useState(DEMO_MODE ? DEMO_DATA : [])
+  const [allRegistros, setAllRegistros] = useState(() => {
+    if (!DEMO_MODE) return []
+    const saved = JSON.parse(localStorage.getItem('vli_registros') || '[]')
+    return [...saved, ...DEMO_DATA]
+  })
   const [busca, setBusca] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
   const [loading, setLoading] = useState(!DEMO_MODE)
@@ -450,9 +510,10 @@ export default function AdminDashboard() {
     if (busca) {
       const term = busca.toLowerCase()
       list = list.filter(r =>
+        (r.tecnico_nome || '').toLowerCase().includes(term) ||
         (r.nome || '').toLowerCase().includes(term) ||
-        (r.serial || '').toLowerCase().includes(term) ||
-        (r.email || '').toLowerCase().includes(term)
+        (r.notebook_novo_serial || '').toLowerCase().includes(term) ||
+        (r.notebook_antigo_serial || '').toLowerCase().includes(term)
       )
     }
     if (statusFilter === 'pendente') list = list.filter(r => !r.enviado_em)
@@ -488,42 +549,44 @@ export default function AdminDashboard() {
   }
 
   function exportXLSX() {
-    const headers = ['Nome', 'Email', 'Serial', 'Modelo', 'Setor', 'Tipo de Atuação', 'Endereço (Rua)', 'Bairro', 'Cidade', 'CEP', 'Mochila', 'Carregador', 'Teclado', 'Mouse', 'Assinatura', 'Matrícula', 'Assinatura_URL', 'Observações', 'Data', 'Status']
-    const data = filteredRegistros.map(r => ({
-      'Nome': r.nome,
-      'Email': r.email,
-      'Serial': r.serial,
-      'Modelo': r.modelo_notebook || '',
-      'Setor': r.setor || '',
-      'Tipo de Atuação': r.tipo_atuacao || '',
-      'Endereço (Rua)': r.endereco_rua || '',
-      'Bairro': r.endereco_bairro || '',
-      'Cidade': r.endereco_cidade || '',
-      'CEP': r.endereco_cep || '',
-      'Mochila': Number(r.com_mochila) ? 'Sim' : 'Não',
-      'Carregador': Number(r.com_carregador) ? 'Sim' : 'Não',
-      'Teclado': Number(r.com_teclado) ? 'Sim' : 'Não',
-      'Mouse': Number(r.com_mouse) ? 'Sim' : 'Não',
-      'Assinatura': r.assinatura_nome || '',
-      'Matrícula': r.assinatura_matricula || '',
-      'Assinatura_URL': r.assinatura_url || '',
-      'Observações': r.observacao || '',
-      'Data': r.enviado_em || r.criado_em,
-      'Status': r.enviado_em ? 'Registrado' : 'Pendente',
-    }))
+    const headers = ['Técnico', 'Notebook Novo', 'Monitor Novo', 'Notebook Antigo', 'Estado Antigo', 'Usuário', 'Email', 'Fase1 %', 'Fase2 %', 'Fase3 %', 'Total %', 'Assinatura', 'Matrícula', 'Data', 'Status']
+    const data = filteredRegistros.map(r => {
+      const p1 = countChecks(r, CHECKLIST_P1)
+      const p2 = countChecks(r, CHECKLIST_P2)
+      const p3 = countChecks(r, CHECKLIST_P3)
+      const total = p1 + p2 + p3
+      const totalMax = CHECKLIST_ALL.length
+      return {
+        'Técnico': r.tecnico_nome || '',
+        'Notebook Novo': r.notebook_novo_serial || '',
+        'Monitor Novo': r.monitor_novo_serial || '',
+        'Notebook Antigo': r.notebook_antigo_serial || '',
+        'Estado Antigo': r.notebook_antigo_estado || '',
+        'Usuário': r.nome || '',
+        'Email': r.email || '',
+        'Fase1 %': totalMax > 0 ? `${Math.round(p1/CHECKLIST_P1.length*100)}%` : '',
+        'Fase2 %': totalMax > 0 ? `${Math.round(p2/CHECKLIST_P2.length*100)}%` : '',
+        'Fase3 %': totalMax > 0 ? `${Math.round(p3/CHECKLIST_P3.length*100)}%` : '',
+        'Total %': totalMax > 0 ? `${Math.round(total/totalMax*100)}%` : '',
+        'Assinatura': r.assinatura_nome || '',
+        'Matrícula': r.assinatura_matricula || '',
+        'Data': r.enviado_em || r.criado_em,
+        'Status': r.enviado_em ? 'Concluído' : 'Pendente',
+      }
+    })
     const ws = XLSX.utils.json_to_sheet(data)
     const wb = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(wb, ws, 'Registros')
     XLSX.writeFile(wb, `registros_${new Date().toISOString().split('T')[0]}.xlsx`)
   }
 
-  function acessoriosText(r) {
-    const items = []
-    if (Number(r.com_mochila)) items.push('Mochila')
-    if (Number(r.com_carregador)) items.push('Carregador')
-    if (Number(r.com_teclado)) items.push('Teclado')
-    if (Number(r.com_mouse)) items.push('Mouse')
-    return items.length ? items.join(', ') : <span className="empty-field">-</span>
+  function checklistSummary(r) {
+    const p1 = countChecks(r, CHECKLIST_P1)
+    const p2 = countChecks(r, CHECKLIST_P2)
+    const p3 = countChecks(r, CHECKLIST_P3)
+    const total = p1 + p2 + p3
+    const totalMax = CHECKLIST_ALL.length
+    return `${total}/${totalMax}`
   }
 
   return (
@@ -531,9 +594,9 @@ export default function AdminDashboard() {
       <header className="admin-header">
         <div className="admin-header-content">
           <div className="admin-header-left">
-            <img src="/logo-simpress.png" alt="Simpress" className="admin-header-logo" />
+            <img src="/logo-vli.svg" alt="VLI" className="admin-header-logo" />
             <div className="admin-header-divider" />
-            <h1>Registro de Notebooks</h1>
+            <h1>Rollout VLI</h1>
           </div>
           <div className="admin-header-actions">
             <button className="btn" onClick={() => navigate('/admin/enviar')}>Links</button>
@@ -550,38 +613,38 @@ export default function AdminDashboard() {
         ) : (
           <>
             <div className="stats-grid">
-              <div className="stat-card stat-total">
-                <div className="stat-label">Total de Links</div>
-                <div className="stat-value">{stats.total}</div>
-                <div className="stat-sub">links criados</div>
-              </div>
-              <div className="stat-card stat-ok">
-                <div className="stat-label">Registrados</div>
-                <div className="stat-value">{stats.registrados}</div>
-                <div className="stat-sub">funcionários concluíram</div>
-              </div>
-              <div className="stat-card stat-pending">
-                <div className="stat-label">Pendentes</div>
-                <div className="stat-value">{stats.pendentes}</div>
-                <div className="stat-sub">aguardando registro</div>
-              </div>
-              <div className="stat-card stat-meta">
-                <div className="stat-label">Meta Total</div>
-                <div className="stat-value">{TOTAL_NOTEBOOKS}</div>
-                <div className="stat-sub">notebooks a distribuir</div>
-              </div>
+                <div className="stat-card stat-total">
+                  <div className="stat-label">Total de Checklists</div>
+                  <div className="stat-value">{stats.total}</div>
+                  <div className="stat-sub">rollouts iniciados</div>
+                </div>
+                <div className="stat-card stat-ok">
+                  <div className="stat-label">Concluídos</div>
+                  <div className="stat-value">{stats.registrados}</div>
+                  <div className="stat-sub">rollouts finalizados</div>
+                </div>
+                <div className="stat-card stat-pending">
+                  <div className="stat-label">Pendentes</div>
+                  <div className="stat-value">{stats.pendentes}</div>
+                  <div className="stat-sub">aguardando conclusão</div>
+                </div>
+                <div className="stat-card stat-meta">
+                  <div className="stat-label">Meta Total</div>
+                  <div className="stat-value">{TOTAL_NOTEBOOKS}</div>
+                  <div className="stat-sub">equipamentos a entregar</div>
+                </div>
             </div>
 
             <div className="progress-section">
               <div className="progress-header">
-                <span className="progress-title">Progresso de Registros</span>
+                <span className="progress-title">Progresso do Rollout VLI</span>
                 <span className="progress-percent">{stats.porcentagem.toFixed(1)}%</span>
               </div>
               <div className="progress-bar-bg">
                 <div className="progress-bar-fill" style={{ width: `${Math.min(stats.porcentagem, 100)}%` }} />
               </div>
               <div className="progress-footer">
-                <span>{stats.registrados} de {TOTAL_NOTEBOOKS} notebooks registrados</span>
+                <span>{stats.registrados} de {TOTAL_NOTEBOOKS} equipamentos entregues</span>
                 <span>{Math.round(TOTAL_NOTEBOOKS - stats.registrados)} restantes</span>
               </div>
             </div>
@@ -604,7 +667,7 @@ export default function AdminDashboard() {
                 <div className="filter-group">
                   <button className={`filter-btn ${statusFilter === '' ? 'active' : ''}`} onClick={() => setStatusFilter('')}>Todos ({stats.total})</button>
                   <button className={`filter-btn ${statusFilter === 'pendente' ? 'active' : ''}`} onClick={() => setStatusFilter('pendente')}>Pendentes ({stats.pendentes})</button>
-                  <button className={`filter-btn ${statusFilter === 'registrado' ? 'active' : ''}`} onClick={() => setStatusFilter('registrado')}>Registrados ({stats.registrados})</button>
+                  <button className={`filter-btn ${statusFilter === 'registrado' ? 'active' : ''}`} onClick={() => setStatusFilter('registrado')}>Concluídos ({stats.registrados})</button>
                 </div>
               </div>
               <div className="toolbar-right">
@@ -617,34 +680,29 @@ export default function AdminDashboard() {
               <table className="admin-table">
                 <thead>
                   <tr>
-                    <th>Nome</th>
-                    <th>Email</th>
-                    <th>Serial</th>
-                    <th>Modelo</th>
-                    <th>Setor</th>
-                    <th>Atuação</th>
-                    <th>Acessórios</th>
+                    <th>Técnico</th>
+                    <th>Usuário</th>
+                    <th>Notebook Novo</th>
+                    <th>Notebook Antigo</th>
+                    <th>Checklist</th>
                     <th>Assinatura</th>
-                    <th>Observações</th>
-                    <th>Data</th>
                     <th>Fotos</th>
+                    <th>Data</th>
                     <th>Status</th>
                     <th style={{ width: 80 }}>Ações</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredRegistros.length === 0 ? (
-                    <tr><td colSpan="13" className="empty">Nenhum registro encontrado</td></tr>
+                    <tr><td colSpan="10" className="empty">Nenhum registro encontrado</td></tr>
                   ) : (
                     filteredRegistros.map(r => (
                       <tr key={r.id} className="clickable-row" onClick={() => handleRowClick(r)}>
-                        <td className="cell-name">{r.nome || <span className="empty-field">Aguardando</span>}</td>
-                        <td>{r.email || <span className="empty-field">-</span>}</td>
-                        <td><code>{r.serial}</code></td>
-                        <td>{r.modelo_notebook || <span className="empty-field">-</span>}</td>
-                        <td style={{ fontSize: 13 }}>{r.setor || <span className="empty-field">-</span>}</td>
-                        <td style={{ fontSize: 13 }}>{r.tipo_atuacao || <span className="empty-field">-</span>}</td>
-                        <td style={{ fontSize: 12 }}>{acessoriosText(r)}</td>
+                        <td className="cell-name">{r.tecnico_nome || <span className="empty-field">-</span>}</td>
+                        <td style={{ fontSize: 12 }}>{r.nome || <span className="empty-field">-</span>}</td>
+                        <td><code style={{ fontSize: 12 }}>{r.notebook_novo_serial || '-'}</code></td>
+                        <td><code style={{ fontSize: 12 }}>{r.notebook_antigo_serial || '-'}</code></td>
+                        <td style={{ fontSize: 12, fontWeight: 600 }}>{checklistSummary(r)}</td>
                         <td style={{ fontSize: 12, whiteSpace: 'nowrap' }}>
                           {r.assinatura_url ? (
                             <img src={r.assinatura_url} alt="Ass" className="foto-thumb" style={{ width: 28, height: 28 }} title={`${r.assinatura_nome || ''} - ${r.assinatura_matricula || ''}`} />
@@ -652,10 +710,6 @@ export default function AdminDashboard() {
                             <span style={{ fontSize: 11, color: 'var(--gray-400)' }}>{r.assinatura_nome ? `${r.assinatura_nome.slice(0, 15)}...` : '-'}</span>
                           )}
                         </td>
-                        <td style={{ fontSize: 12, maxWidth: 150, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                          {r.observacao || <span className="empty-field">-</span>}
-                        </td>
-                        <td className="cell-date">{new Date(r.enviado_em || r.criado_em).toLocaleString('pt-BR')}</td>
                         <td>
                           <div className="foto-thumbs">
                             {[r.foto1_url, r.foto2_url, r.foto3_url, r.foto4_url].filter(Boolean).map((url, i) => (
@@ -664,9 +718,10 @@ export default function AdminDashboard() {
                             {![r.foto1_url, r.foto2_url, r.foto3_url, r.foto4_url].some(Boolean) && <span className="no-fotos">-</span>}
                           </div>
                         </td>
+                        <td className="cell-date">{new Date(r.enviado_em || r.criado_em).toLocaleString('pt-BR')}</td>
                         <td>
                           <span className={`status-badge ${r.enviado_em ? 'status-ok' : 'status-pendente'}`}>
-                            {r.enviado_em ? 'Registrado' : 'Pendente'}
+                            {r.enviado_em ? 'Concluído' : 'Pendente'}
                           </span>
                         </td>
                         <td>

@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { loginAdmin } from '../lib/api'
 
+const DEMO_MODE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+
 export default function AdminLogin() {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
@@ -13,6 +15,17 @@ export default function AdminLogin() {
     e.preventDefault()
     setError('')
     setLoading(true)
+
+    if (DEMO_MODE) {
+      if (username === 'admin' && password === 'admin123') {
+        localStorage.setItem('admin_token', 'demo-token')
+        navigate('/admin')
+      } else {
+        setError('Credenciais inválidas. Tente: admin / admin123')
+      }
+      setLoading(false)
+      return
+    }
 
     const data = await loginAdmin(username, password)
     if (data.token) {
@@ -32,9 +45,9 @@ export default function AdminLogin() {
             <img src="/logo-simpress.png" alt="Simpress" className="logo-img" />
             <span className="logo-hp">an HP Company</span>
           </div>
-          <img src="/logo-grupo-sada.png" alt="Grupo SADA" className="logo-img logo-sada" />
+          <img src="/logo-vli.svg" alt="VLI" className="logo-img logo-vli-login" />
         </div>
-        <h2>Registro de Notebooks</h2>
+        <h2>Checklist de Preparação e Entrega</h2>
         <p className="subtitle">Entre com suas credenciais de administrador</p>
 
         {error && <div className="alert alert-error">{error}</div>}

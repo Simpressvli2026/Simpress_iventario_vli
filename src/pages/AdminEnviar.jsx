@@ -66,9 +66,9 @@ export default function AdminEnviar() {
       <header className="admin-header">
         <div className="admin-header-content">
           <div className="admin-header-left">
-            <img src="/logo-simpress.png" alt="Simpress" className="admin-header-logo" />
+            <img src="/logo-vli.svg" alt="VLI" className="admin-header-logo" />
             <div className="admin-header-divider" />
-            <h1>Gerenciar Links</h1>
+            <h1>Rollout VLI — Gerenciar Links</h1>
           </div>
           <div className="admin-header-actions">
             <button className="btn" onClick={() => navigate('/admin')}>Dashboard</button>
