@@ -195,7 +195,7 @@ async function initDb() {
       await client.execute(`ALTER TABLE registros ADD COLUMN ${col} TEXT`)
     } catch {}
   }
-  for (const col of ['tecnico_nome', 'notebook_novo_serial', 'monitor_novo_serial', 'notebook_antigo_serial', 'notebook_antigo_estado', ...CHECKLIST_FIELDS]) {
+  for (const col of ['tecnico_nome', 'notebook_novo_serial', 'monitor_novo_serial', 'notebook_antigo_serial', 'notebook_antigo_estado', 'foto5_url', 'foto6_url', ...CHECKLIST_FIELDS]) {
     try {
       await client.execute(`ALTER TABLE registros ADD COLUMN ${col} TEXT`)
     } catch {}
@@ -260,10 +260,12 @@ function vliArgs(body) {
 async function handleRegistrar(event) {
   try {
     const body = getBody(event)
-    const { token, nome, email, serial, modelo_notebook, foto1_url, foto2_url, foto3_url, foto4_url, observacao, com_mochila, com_carregador, com_teclado, com_mouse, setor, assinatura_nome, assinatura_matricula, assinatura_url, tipo_atuacao, endereco_rua, endereco_bairro, endereco_cidade, endereco_cep } = body
+    const { token, tecnico_nome, notebook_novo_serial, monitor_novo_serial, notebook_antigo_serial, notebook_antigo_estado,
+      foto1_url, foto2_url, foto3_url, foto4_url, foto5_url, foto6_url,
+      assinatura_nome, assinatura_matricula, assinatura_url } = body
 
-    if (!token || !nome || !email || !serial) {
-      return json({ error: 'Campos obrigatórios: token, nome, email, serial' }, 400)
+    if (!token || !tecnico_nome || !notebook_novo_serial || !notebook_antigo_serial) {
+      return json({ error: 'Campos obrigatórios: token, nome do técnico, séries' }, 400)
     }
 
     const client = getDb()
@@ -281,32 +283,22 @@ async function handleRegistrar(event) {
       return json({ error: 'Este link já foi utilizado.' }, 400)
     }
 
-    const serialResult = await client.execute({
-      sql: 'SELECT nome, criado_em FROM registros WHERE serial = ?',
-      args: [serial],
-    })
-
-    if (serialResult.rows.length > 0) {
-      const existing = serialResult.rows[0]
-      return json({
-        error: `Este equipamento já foi registrado em ${existing.criado_em} por ${existing.nome}`,
-      }, 409)
-    }
-
     const v = vliFields(body)
 
     await client.execute({
       sql: `UPDATE registros SET
-        nome = ?, email = ?, celular = ?, serial = ?,
-        modelo_notebook = ?, foto1_url = ?, foto2_url = ?, foto3_url = ?, foto4_url = ?,
-        observacao = ?, com_mochila = ?, com_carregador = ?, com_teclado = ?, com_mouse = ?, setor = ?,
-        assinatura_nome = ?, assinatura_matricula = ?, assinatura_url = ?, tipo_atuacao = ?,
-        endereco_rua = ?, endereco_bairro = ?, endereco_cidade = ?, endereco_cep = ?,
+        nome = ?, celular = ?, serial = ?,
+        foto1_url = ?, foto2_url = ?, foto3_url = ?, foto4_url = ?, foto5_url = ?, foto6_url = ?,
+        assinatura_nome = ?, assinatura_matricula = ?, assinatura_url = ?,
         tecnico_nome = ?, notebook_novo_serial = ?, monitor_novo_serial = ?,
         notebook_antigo_serial = ?, notebook_antigo_estado = ?, ${vliSqlSet()},
         enviado_em = ?
       WHERE token = ?`,
-      args: [nome, email, '', serial, modelo_notebook || null, foto1_url || null, foto2_url || null, foto3_url || null, foto4_url || null, observacao || null, com_mochila ? 1 : 0, com_carregador ? 1 : 0, com_teclado ? 1 : 0, com_mouse ? 1 : 0, setor || null, assinatura_nome || null, assinatura_matricula || null, assinatura_url || null, tipo_atuacao || null, endereco_rua || null, endereco_bairro || null, endereco_cidade || null, endereco_cep || null, v.tecnico_nome, v.notebook_novo_serial, v.monitor_novo_serial, v.notebook_antigo_serial, v.notebook_antigo_estado, ...vliArgs(body), new Date().toISOString(), token],
+      args: [tecnico_nome, '', `${notebook_novo_serial} | antigo: ${notebook_antigo_serial}`,
+        foto1_url || null, foto2_url || null, foto3_url || null, foto4_url || null, foto5_url || null, foto6_url || null,
+        assinatura_nome || null, assinatura_matricula || null, assinatura_url || null,
+        v.tecnico_nome, v.notebook_novo_serial, v.monitor_novo_serial, v.notebook_antigo_serial, v.notebook_antigo_estado,
+        ...vliArgs(body), new Date().toISOString(), token],
     })
 
     return json({ sucesso: true, mensagem: 'Registro concluído com sucesso!' })
@@ -319,44 +311,32 @@ async function handleRegistrar(event) {
 async function handleRegistrarPublico(event) {
   try {
     const body = getBody(event)
-    const { nome, email, serial, modelo_notebook, foto1_url, foto2_url, foto3_url, foto4_url, observacao, com_mochila, com_carregador, com_teclado, com_mouse, setor, assinatura_nome, assinatura_matricula, assinatura_url, tipo_atuacao, endereco_rua, endereco_bairro, endereco_cidade, endereco_cep } = body
+    const { tecnico_nome, notebook_novo_serial, monitor_novo_serial, notebook_antigo_serial, notebook_antigo_estado,
+      foto1_url, foto2_url, foto3_url, foto4_url, foto5_url, foto6_url,
+      assinatura_nome, assinatura_matricula, assinatura_url } = body
 
-    if (!nome || !email || !serial) {
-      return json({ error: 'Campos obrigatórios: nome, email, serial' }, 400)
+    if (!tecnico_nome || !notebook_novo_serial || !notebook_antigo_serial || !assinatura_nome || !assinatura_matricula) {
+      return json({ error: 'Campos obrigatórios: nome do técnico, séries, assinatura e matrícula' }, 400)
     }
 
     const client = getDb()
-
-    const serialResult = await client.execute({
-      sql: 'SELECT nome, criado_em FROM registros WHERE serial = ?',
-      args: [serial],
-    })
-
-    if (serialResult.rows.length > 0) {
-      const existing = serialResult.rows[0]
-      return json({
-        error: `Este equipamento já foi registrado em ${existing.criado_em} por ${existing.nome}`,
-      }, 409)
-    }
-
     const token = uuidv4()
     const v = vliFields(body)
 
     await client.execute({
-      sql: `INSERT INTO registros (token, nome, email, celular, serial, modelo_notebook,
-        foto1_url, foto2_url, foto3_url, foto4_url, observacao, com_mochila, com_carregador, com_teclado, com_mouse, setor,
-        assinatura_nome, assinatura_matricula, assinatura_url, tipo_atuacao,
-        endereco_rua, endereco_bairro, endereco_cidade, endereco_cep,
+      sql: `INSERT INTO registros (token, nome, email, celular, serial,
+        foto1_url, foto2_url, foto3_url, foto4_url, foto5_url, foto6_url,
+        assinatura_nome, assinatura_matricula, assinatura_url,
         tecnico_nome, notebook_novo_serial, monitor_novo_serial, notebook_antigo_serial, notebook_antigo_estado,
         ${CHECKLIST_FIELDS.join(', ')}, enviado_em)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+      VALUES (?, '', '', '', ?,
+        ?, ?, ?, ?, ?, ?,
+        ?, ?, ?,
         ?, ?, ?, ?, ?,
         ${CHECKLIST_FIELDS.map(() => '?').join(', ')}, ?)`,
-      args: [token, nome, email, '', serial, modelo_notebook || null,
-        foto1_url || null, foto2_url || null, foto3_url || null, foto4_url || null,
-        observacao || null, com_mochila ? 1 : 0, com_carregador ? 1 : 0, com_teclado ? 1 : 0, com_mouse ? 1 : 0, setor || null,
-        assinatura_nome || null, assinatura_matricula || null, assinatura_url || null, tipo_atuacao || null,
-        endereco_rua || null, endereco_bairro || null, endereco_cidade || null, endereco_cep || null,
+      args: [token, `${notebook_novo_serial} | antigo: ${notebook_antigo_serial}`,
+        foto1_url || null, foto2_url || null, foto3_url || null, foto4_url || null, foto5_url || null, foto6_url || null,
+        assinatura_nome || null, assinatura_matricula || null, assinatura_url || null,
         v.tecnico_nome, v.notebook_novo_serial, v.monitor_novo_serial, v.notebook_antigo_serial, v.notebook_antigo_estado,
         ...vliArgs(body), new Date().toISOString()],
     })
@@ -452,34 +432,25 @@ async function handleGetRegistro(event, id) {
 
 async function handleEditRegistro(event, id) {
   const body = getBody(event)
-  const { nome, email, serial, modelo_notebook, observacao, com_mochila, com_carregador, com_teclado, com_mouse, setor, assinatura_nome, assinatura_matricula, tipo_atuacao, endereco_rua, endereco_bairro, endereco_cidade, endereco_cep } = body
+  const { tecnico_nome, notebook_novo_serial, monitor_novo_serial, notebook_antigo_serial, notebook_antigo_estado,
+    assinatura_nome, assinatura_matricula } = body
 
-  if (!nome || !email || !serial) {
-    return json({ error: 'Campos obrigatórios: nome, email, serial' }, 400)
+  if (!tecnico_nome || !notebook_novo_serial || !notebook_antigo_serial) {
+    return json({ error: 'Campos obrigatórios: técnico e séries' }, 400)
   }
 
   const client = getDb()
-
-  const existing = await client.execute({
-    sql: 'SELECT id FROM registros WHERE serial = ? AND id != ?',
-    args: [serial, id],
-  })
-
-  if (existing.rows.length > 0) {
-    return json({ error: 'Este número de série já está em uso por outro registro' }, 409)
-  }
-
   const v = vliFields(body)
 
   await client.execute({
-    sql: `UPDATE registros SET nome = ?, email = ?, celular = ?, serial = ?,
-      modelo_notebook = ?, observacao = ?, com_mochila = ?, com_carregador = ?, com_teclado = ?, com_mouse = ?, setor = ?,
-      assinatura_nome = ?, assinatura_matricula = ?, assinatura_url = ?, tipo_atuacao = ?,
-      endereco_rua = ?, endereco_bairro = ?, endereco_cidade = ?, endereco_cep = ?,
+    sql: `UPDATE registros SET nome = ?, celular = ?,
+      assinatura_nome = ?, assinatura_matricula = ?,
       tecnico_nome = ?, notebook_novo_serial = ?, monitor_novo_serial = ?,
       notebook_antigo_serial = ?, notebook_antigo_estado = ?, ${vliSqlSet()}
     WHERE id = ?`,
-    args: [nome, email, '', serial, modelo_notebook || null, observacao || null, com_mochila ? 1 : 0, com_carregador ? 1 : 0, com_teclado ? 1 : 0, com_mouse ? 1 : 0, setor || null, assinatura_nome || null, assinatura_matricula || null, assinatura_url || null, tipo_atuacao || null, endereco_rua || null, endereco_bairro || null, endereco_cidade || null, endereco_cep || null, v.tecnico_nome, v.notebook_novo_serial, v.monitor_novo_serial, v.notebook_antigo_serial, v.notebook_antigo_estado, ...vliArgs(body), id],
+    args: [tecnico_nome, '', assinatura_nome || null, assinatura_matricula || null,
+      v.tecnico_nome, v.notebook_novo_serial, v.monitor_novo_serial, v.notebook_antigo_serial, v.notebook_antigo_estado,
+      ...vliArgs(body), id],
   })
 
   return json({ sucesso: true, mensagem: 'Registro atualizado com sucesso!' })
