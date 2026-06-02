@@ -329,15 +329,15 @@ async function handleRegistrarPublico(event) {
         assinatura_nome, assinatura_matricula, assinatura_url,
         tecnico_nome, notebook_novo_serial, monitor_novo_serial, notebook_antigo_serial, notebook_antigo_estado,
         ${CHECKLIST_FIELDS.join(', ')}, enviado_em)
-      VALUES (?, '', '', '', ?,
+      VALUES (?, ?, '', '', ?,
         ?, ?, ?, ?, ?, ?,
         ?, ?, ?,
         ?, ?, ?, ?, ?,
         ${CHECKLIST_FIELDS.map(() => '?').join(', ')}, ?)`,
-      args: [token, `${notebook_novo_serial} | antigo: ${notebook_antigo_serial}`,
+      args: [token, tecnico_nome, notebook_novo_serial,
         foto1_url || null, foto2_url || null, foto3_url || null, foto4_url || null, foto5_url || null, foto6_url || null,
         assinatura_nome || null, assinatura_matricula || null, assinatura_url || null,
-        v.tecnico_nome, v.notebook_novo_serial, v.monitor_novo_serial, v.notebook_antigo_serial, v.notebook_antigo_estado,
+        tecnico_nome, notebook_novo_serial, monitor_novo_serial, notebook_antigo_serial, notebook_antigo_estado,
         ...vliArgs(body), new Date().toISOString()],
     })
 
