@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sistema Rollout VLI - Documento Técnico</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: #f3f4f6;
+    color: #1f2937;
+    padding: 40px;
+    line-height: 1.6;
+  }
+  .container { max-width: 900px; margin: 0 auto; }
+  .header {
+    background: linear-gradient(135deg, #0047BB, #003399);
+    color: white;
+    padding: 48px 40px;
+    border-radius: 16px;
+    margin-bottom: 32px;
+    text-align: center;
+  }
+  .header h1 { font-size: 32px; font-weight: 800; margin-bottom: 8px; letter-spacing: -0.5px; }
+  .header p { font-size: 16px; opacity: 0.85; }
+  .section {
+    background: white;
+    border-radius: 12px;
+    padding: 32px;
+    margin-bottom: 24px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+  .section h2 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #0047BB;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 3px solid #e5e7eb;
+  }
+  .section h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #374151;
+    margin-top: 20px;
+    margin-bottom: 8px;
+  }
+  .section p { font-size: 14px; color: #4b5563; margin-bottom: 12px; }
+  .section ul { list-style: none; padding: 0; }
+  .section ul li {
+    font-size: 14px;
+    color: #4b5563;
+    padding: 6px 0 6px 24px;
+    position: relative;
+  }
+  .section ul li::before {
+    content: "";
+    position: absolute;
+    left: 4px;
+    top: 12px;
+    width: 8px;
+    height: 8px;
+    background: #0047BB;
+    border-radius: 2px;
+  }
+  .badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    margin-right: 4px;
+  }
+  .badge-green { background: #d1fae5; color: #065f46; }
+  .badge-blue { background: #dbeafe; color: #1e40af; }
+  .badge-yellow { background: #fef3c7; color: #92400e; }
+  .table-wrap { overflow-x: auto; margin-top: 16px; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  table th {
+    background: #f9fafb;
+    text-align: left;
+    padding: 12px 16px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #6b7280;
+    border-bottom: 2px solid #e5e7eb;
+  }
+  table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #f3f4f6;
+    color: #374151;
+  }
+  table tr:last-child td { border-bottom: none; }
+  .checklist-cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+    margin-top: 12px;
+  }
+  .checklist-col {
+    background: #f9fafb;
+    border-radius: 8px;
+    padding: 16px;
+    border: 1px solid #e5e7eb;
+  }
+  .checklist-col h4 {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 2px solid #d1d5db;
+  }
+  .checklist-col ul { list-style: none; }
+  .checklist-col ul li {
+    font-size: 12px;
+    padding: 4px 0 4px 16px;
+    position: relative;
+  }
+  .checklist-col ul li::before {
+    content: "✓";
+    position: absolute;
+    left: 0;
+    color: #16a34a;
+    font-weight: 700;
+  }
+  .tag {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .tag-ok { background: #d1fae5; color: #065f46; }
+  .tag-warn { background: #fef3c7; color: #92400e; }
+  .tag-info { background: #dbeafe; color: #1e40af; }
+  .footer {
+    text-align: center;
+    font-size: 13px;
+    color: #9ca3af;
+    padding: 24px 0;
+  }
+  @media print {
+    body { background: white; padding: 20px; }
+    .section { box-shadow: none; border: 1px solid #e5e7eb; }
+    .header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .badge { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .tag { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .checklist-col { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .checklist-col ul li::before { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+  @media (max-width: 768px) {
+    body { padding: 16px; }
+    .header { padding: 32px 20px; }
+    .section { padding: 20px; }
+    .checklist-cols { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <h1>Sistema Rollout VLI</h1>
+    <p>Checklist de Preparação, Entrega e Pós-Entrega de Equipamentos</p>
+    <p style="margin-top: 8px; font-size: 14px; opacity: 0.7;">Junho 2026</p>
+  </div>
+
+  <!-- RESUMO -->
+  <div class="section">
+    <h2>1. Visão Geral</h2>
+    <p>Sistema web desenvolvido para gerenciar o processo de rollout de equipamentos VLI. Permite que técnicos preencham um checklist completo em 3 fases, com fotos e assinatura digital, e que administradores acompanhem o progresso em tempo real.</p>
+    <p><strong>Público-alvo:</strong> Técnicos de TI (preenchem o checklist) e Administradores (acompanham relatórios).</p>
+    <p><strong>Meta:</strong> 4.000 equipamentos.</p>
+  </div>
+
+  <!-- ACESSO -->
+  <div class="section">
+    <h2>2. Acessos</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Função</th>
+            <th>URL</th>
+            <th>Login</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Admin (Dashboard)</strong></td>
+            <td><code>https://simpressinventariovli.netlify.app/admin/login</code></td>
+            <td>admin / admin123</td>
+          </tr>
+          <tr>
+            <td><strong>Formulário Técnico</strong></td>
+            <td><code>https://simpressinventariovli.netlify.app/registrar</code></td>
+            <td>Público (sem login)</td>
+          </tr>
+          <tr>
+            <td><strong>Repositório GitHub</strong></td>
+            <td><code>github.com/Simpressvli2026/Simpress_iventario_vli</code></td>
+            <td>-</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- CHECKLIST -->
+  <div class="section">
+    <h2>3. Checklist do Rollout</h2>
+
+    <div class="checklist-cols">
+      <div class="checklist-col" style="border-top: 3px solid #0047BB;">
+        <h4 style="color: #0047BB;">1. Preparação da Máquina</h4>
+        <ul>
+          <li>Validar integridade física (tela, teclado, bateria, câmera, som)</li>
+          <li>Gerar e salvar relatório de bateria</li>
+          <li>Validar senha do BIOS</li>
+          <li>Validar/ativar Secure Boot</li>
+          <li>Realizar login com usuário local</li>
+          <li>Alterar hostname conforme padrão VLI</li>
+          <li>Ingressar equipamento no domínio</li>
+          <li>Validar se está na OU correta</li>
+          <li>Executar gpupdate /force</li>
+          <li>Validar ativação do Windows</li>
+          <li>Validar configuração de rede (Wi-Fi, energia, DNS)</li>
+          <li>Remover HP Support Assistant</li>
+          <li>Instalar HP Image Assistant</li>
+          <li>Atualizar drivers e BIOS (HP Image Assistant)</li>
+          <li>Ativar HP WXP</li>
+          <li>Validar Configuration Manager (7 ciclos)</li>
+          <li>Validar BitLocker ativo (100%)</li>
+          <li>Limpar equipamento para entrega</li>
+        </ul>
+      </div>
+
+      <div class="checklist-col" style="border-top: 3px solid #0d9488;">
+        <h4 style="color: #0d9488;">2. Entrega ao Usuário</h4>
+        <ul>
+          <li>Confirmar backup do usuário (OneDrive)</li>
+          <li>Instalar softwares homologados</li>
+          <li>Validar funcionamento dos softwares</li>
+          <li>Ativar pacote Office e Teams com usuário</li>
+          <li>Realizar sincronização da conta Microsoft</li>
+          <li>Migrar certificados</li>
+          <li>Mapear fila de impressão</li>
+          <li>Validar configurações gerais com o usuário</li>
+          <li>Garantir assinatura do termo de responsabilidade</li>
+        </ul>
+      </div>
+
+      <div class="checklist-col" style="border-top: 3px solid #7c3aed;">
+        <h4 style="color: #7c3aed;">3. Pós-Entrega</h4>
+        <ul>
+          <li>Embalar equipamento antigo na caixa do novo</li>
+          <li>Identificar caixa (nome do usuário + série)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ARQUITETURA -->
+  <div class="section">
+    <h2>4. Arquitetura do Sistema</h2>
+    <p>O sistema utiliza 3 plataformas cloud, todas com planos gratuitos:</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Componente</th>
+            <th>Tecnologia</th>
+            <th>Função</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Frontend</strong></td>
+            <td>React + Vite</td>
+            <td>Interface do formulário e dashboard admin</td>
+          </tr>
+          <tr>
+            <td><strong>Hospedagem</strong></td>
+            <td>Netlify</td>
+            <td>CDN global, deploy automático pelo GitHub</td>
+          </tr>
+          <tr>
+            <td><strong>Backend (API)</strong></td>
+            <td>Netlify Functions</td>
+            <td>Serverless, sem servidor para gerenciar</td>
+          </tr>
+          <tr>
+            <td><strong>Banco de Dados</strong></td>
+            <td>Turso (libSQL)</td>
+            <td>Banco SQL na nuvem, compatível com SQLite</td>
+          </tr>
+          <tr>
+            <td><strong>Imagens</strong></td>
+            <td>Cloudinary</td>
+            <td>Upload, armazenamento e CDN de fotos</td>
+          </tr>
+          <tr>
+            <td><strong>Versionamento</strong></td>
+            <td>GitHub</td>
+            <td>Código fonte e controle de versão</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- FUNCIONALIDADES -->
+  <div class="section">
+    <h2>5. Funcionalidades</h2>
+    <ul>
+      <li><strong>Formulário público</strong> — Técnicos acessam sem precisar de login ou senha</li>
+      <li><strong>Checklist completo</strong> — 29 itens obrigatórios divididos em 3 fases</li>
+      <li><strong>Upload de fotos</strong> — Até 6 fotos via câmera ou galeria (Cloudinary CDN)</li>
+      <li><strong>Assinatura digital</strong> — Técnico assina na tela (touch ou mouse)</li>
+      <li><strong>Validação total</strong> — Todos os campos são obrigatórios</li>
+      <li><strong>Auto-reset</strong> — Após concluir, o formulário limpa automaticamente</li>
+      <li><strong>Dashboard admin</strong> — Visão geral com estatísticas e progresso</li>
+      <li><strong>Busca e filtros</strong> — Localizar registros por técnico, usuário ou série</li>
+      <li><strong>Exportação XLSX</strong> — Baixar relatório em Excel</li>
+      <li><strong>Detalhes do registro</strong> — Visualização completa de cada rollout</li>
+      <li><strong>Responsivo</strong> — Funciona em desktop, tablet e celular</li>
+    </ul>
+  </div>
+
+  <!-- CAMPOS DO FORMULÁRIO -->
+  <div class="section">
+    <h2>6. Dados Coletados no Formulário</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Campo</th>
+            <th>Tipo</th>
+            <th>Descrição</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Nome do técnico</strong></td><td>Texto</td><td>Responsável pelo rollout</td></tr>
+          <tr><td><strong>Série do notebook novo</strong></td><td>Texto</td><td>Nº de série do equipamento novo</td></tr>
+          <tr><td><strong>Série do monitor novo</strong></td><td>Texto</td><td>Nº de série do monitor novo</td></tr>
+          <tr><td><strong>Série do notebook antigo</strong></td><td>Texto</td><td>Nº de série do equipamento antigo</td></tr>
+          <tr><td><strong>Estado do notebook antigo</strong></td><td>Texto</td><td>Descrição de avarias/danos</td></tr>
+          <tr><td><strong>6 Fotos</strong></td><td>Imagem</td><td>Novo (frontal, série), Monitor novo (série), Antigo (estado, série), Monitor antigo (série)</td></tr>
+          <tr><td><strong>Checklist Fase 1</strong></td><td>18 itens</td><td>Preparação da máquina</td></tr>
+          <tr><td><strong>Checklist Fase 2</strong></td><td>9 itens</td><td>Entrega ao usuário</td></tr>
+          <tr><td><strong>Checklist Fase 3</strong></td><td>2 itens</td><td>Pós-entrega</td></tr>
+          <tr><td><strong>Assinatura (nome)</strong></td><td>Texto</td><td>Nome completo do técnico</td></tr>
+          <tr><td><strong>Matrícula</strong></td><td>Texto</td><td>Matrícula do técnico</td></tr>
+          <tr><td><strong>Assinatura desenhada</strong></td><td>Imagem</td><td>Assinatura digital na tela</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- SEGURANÇA -->
+  <div class="section">
+    <h2>7. Segurança</h2>
+    <ul>
+      <li><span class="badge badge-green">Netlify</span> Certificado SSL automático, WAF, DDoS protection</li>
+      <li><span class="badge badge-green">Turso</span> Criptografia em repouso e em trânsito</li>
+      <li><span class="badge badge-green">Cloudinary</span> SOC 2 Type II, ISO 27001, criptografia</li>
+      <li><span class="badge badge-blue">JWT</span> Autenticação admin com token</li>
+      <li><span class="badge badge-blue">Senha</span> Armazenada com hash SHA-256</li>
+      <li><span class="badge badge-blue">Upload seguro</span> Apenas imagens, máx 5MB, pastas separadas</li>
+    </ul>
+  </div>
+
+  <!-- CUSTOS -->
+  <div class="section">
+    <h2>8. Custos (Todos Gratuitos)</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Serviço</th>
+            <th>Plano</th>
+            <th>Limites do plano gratuito</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Netlify</strong></td>
+            <td><span class="tag tag-ok">Free</span></td>
+            <td>100 GB banda/mês, 300h build/mês</td>
+          </tr>
+          <tr>
+            <td><strong>Turso</strong></td>
+            <td><span class="tag tag-info">Escalável</span></td>
+            <td>Plano gratuito generoso, sem custo inicial</td>
+          </tr>
+          <tr>
+            <td><strong>Cloudinary</strong></td>
+            <td><span class="tag tag-ok">Free</span></td>
+            <td>25 GB armazenamento, 25 GB CDN/mês</td>
+          </tr>
+          <tr>
+            <td><strong>GitHub</strong></td>
+            <td><span class="tag tag-ok">Free</span></td>
+            <td>Repositórios ilimitados</td>
+          </tr>
+          <tr>
+            <td colspan="3" style="text-align: center; font-weight: 700; color: #065f46; background: #f0fdf4;">
+              Custo total: R$ 0,00 mensais
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- CONCLUSÃO -->
+  <div class="section" style="border-left: 4px solid #0047BB;">
+    <h2 style="border-bottom-color: #0047BB; color: #003399;">9. Conclusão</h2>
+    <p style="font-size: 15px; font-weight: 600; margin-bottom: 16px;">Sistema pronto para produção com custo zero de infraestrutura.</p>
+    <ul>
+      <li><strong>Formulário</strong> liberado para os técnicos em <code>/registrar</code></li>
+      <li><strong>Dashboard admin</strong> em <code>/admin/login</code> (admin / admin123)</li>
+      <li><strong>Dados salvos</strong> automaticamente no banco Turso</li>
+      <li><strong>Fotos</strong> armazenadas no Cloudinary com CDN global</li>
+      <li><strong>Deploy automático</strong> via GitHub Actions na Netlify</li>
+    </ul>
+  </div>
+
+  <div class="footer">
+    Documento gerado automaticamente &mdash; Sistema Rollout VLI
+  </div>
+
+</div>
+</body>
+</html>
