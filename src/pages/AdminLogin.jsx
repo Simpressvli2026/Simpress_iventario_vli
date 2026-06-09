@@ -45,7 +45,6 @@ export default function AdminLogin() {
             <img src="/logo-simpress.png" alt="Simpress" className="logo-img" />
             <span className="logo-hp">an HP Company</span>
           </div>
-          <img src="/logo-vli.svg" alt="VLI" className="logo-img logo-vli-login" />
         </div>
         <h2>Checklist de Preparação e Entrega</h2>
         <p className="subtitle">Entre com suas credenciais de administrador</p>

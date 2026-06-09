@@ -69,7 +69,7 @@ function DetailModal({ registro, onClose, onEdit }) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content modal-lg" onClick={e => e.stopPropagation()}>
         <button className="modal-close" onClick={onClose}>&times;</button>
-        <h2 className="modal-title">Detalhes do Rollout VLI</h2>
+        <h2 className="modal-title">Detalhes do Rollout</h2>
 
         <div className="detail-grid">
           <div className="detail-field" style={{ gridColumn: '1 / -1' }}>
@@ -295,7 +295,7 @@ function EditModal({ registro, onClose, onSave, demo }) {
             <textarea value={form.observacao} onChange={e => setForm({ ...form, observacao: e.target.value })} rows={3} />
           </div>
           <hr style={{ margin: '12px 0', border: 'none', borderTop: '1px solid var(--gray-200)' }} />
-          <h4 style={{ fontSize: 13, fontWeight: 700, color: 'var(--gray-700)', marginBottom: 12 }}>Dados do Rollout VLI</h4>
+          <h4 style={{ fontSize: 13, fontWeight: 700, color: 'var(--gray-700)', marginBottom: 12 }}>Dados do Rollout</h4>
           <div className="form-group">
             <label>Técnico Responsável</label>
             <input value={form.tecnico_nome} onChange={e => setForm({ ...form, tecnico_nome: e.target.value })} />
@@ -594,9 +594,9 @@ export default function AdminDashboard() {
       <header className="admin-header">
         <div className="admin-header-content">
           <div className="admin-header-left">
-            <img src="/logo-vli.svg" alt="VLI" className="admin-header-logo" />
+            <img src="/logo-simpress.png" alt="Simpress" className="admin-header-logo" />
             <div className="admin-header-divider" />
-            <h1>Rollout VLI</h1>
+            <h1>Rollout</h1>
           </div>
           <div className="admin-header-actions">
             <button className="btn" onClick={() => navigate('/admin/enviar')}>Links</button>
@@ -637,7 +637,7 @@ export default function AdminDashboard() {
 
             <div className="progress-section">
               <div className="progress-header">
-                <span className="progress-title">Progresso do Rollout VLI</span>
+                <span className="progress-title">Progresso do Rollout</span>
                 <span className="progress-percent">{stats.porcentagem.toFixed(1)}%</span>
               </div>
               <div className="progress-bar-bg">

@@ -381,7 +381,7 @@ export default function RegistroPage() {
           </fieldset>
 
           <button type="submit" className="btn btn-primary btn-full" disabled={submitting}>
-            {submitting ? 'Registrando...' : 'Finalizar Checklist Rollout VLI'}
+            {submitting ? 'Registrando...' : 'Finalizar Checklist'}
           </button>
         </form>
       </div>

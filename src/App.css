@@ -122,33 +122,9 @@ body {
   object-fit: contain;
 }
 
-.logo-img-vli {
-  height: 48px;
-  width: auto;
-  object-fit: contain;
-}
-
-.form-card .logo-img-vli {
-  height: 40px;
-}
-
-.login-card .logo-img-vli {
-  height: 56px;
-}
-
-.admin-header-logo[alt="VLI"] {
+.admin-header-logo[alt="Simpress"] {
   height: 32px;
   filter: brightness(0) invert(1);
-}
-
-.login-card .logo-sada {
-  height: 88px;
-  margin-top: -24px;
-}
-
-.login-card .logo-vli-login {
-  height: 72px;
-  margin-top: -8px;
 }
 
 .login-card .logo-simpress-wrapper, .form-card .logo-simpress-wrapper {

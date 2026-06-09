@@ -81,7 +81,7 @@ export default function GuestView() {
     <div className="admin-layout">
       <header className="admin-header">
         <div className="admin-header-content">
-          <h1>Rollout VLI &mdash; Visualização</h1>
+          <h1>Rollout &mdash; Visualização</h1>
           <span style={{ fontSize: 13, opacity: 0.7 }}>Modo convidado &mdash; apenas visualização</span>
         </div>
       </header>
