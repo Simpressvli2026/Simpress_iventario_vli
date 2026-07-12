@@ -8,7 +8,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-dotenv.config({ override: true, path: path.join(__dirname, '.env') })
+dotenv.config({ path: path.join(__dirname, '.env') })
 
 const JWT_SECRET = process.env.JWT_SECRET || 'sada-admin-secret-2024'
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin'
