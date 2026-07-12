@@ -8,7 +8,11 @@ if (strpos($uri, '/api/') === 0) {
 
 $distFile = __DIR__ . '/dist' . $uri;
 if ($uri !== '/' && is_file($distFile)) {
-  return false;
+  $ext = pathinfo($distFile, PATHINFO_EXTENSION);
+  $mime = ['js'=>'application/javascript','css'=>'text/css','png'=>'image/png','jpg'=>'image/jpeg','jpeg'=>'image/jpeg','gif'=>'image/gif','svg'=>'image/svg+xml','ico'=>'image/x-icon','woff'=>'font/woff','woff2'=>'font/woff2','json'=>'application/json','html'=>'text/html'];
+  header('Content-Type: ' . ($mime[$ext] ?? 'application/octet-stream'));
+  readfile($distFile);
+  return;
 }
 
 readfile(__DIR__ . '/dist/index.html');
