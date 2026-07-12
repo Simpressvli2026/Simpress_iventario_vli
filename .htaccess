@@ -1,9 +1,14 @@
 RewriteEngine On
-RewriteCond %{REQUEST_URI} ^/api [OR]
-RewriteCond %{REQUEST_URI} ^/registrar [OR]
-RewriteCond %{REQUEST_URI} ^/convidado
-RewriteRule ^(.*)$ http://127.0.0.1:3000/$1 [P,L]
 
+# API requests -> PHP
+RewriteRule ^api/ api/index.php [QSA,L]
+
+# Serve existing files from dist/
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^(.*)$ http://127.0.0.1:3000/$1 [P,L]
+RewriteRule ^(.*)$ dist/$1 [L]
+
+# SPA fallback
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ dist/index.html [L]
