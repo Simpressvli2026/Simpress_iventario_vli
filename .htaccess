@@ -1,11 +1,2 @@
 RewriteEngine On
-
-# API requests -> PHP
-RewriteRule ^api/ api/index.php [QSA,L]
-
-# Serve files from dist/ if they exist there
-RewriteCond %{DOCUMENT_ROOT}/dist/$1 -f
-RewriteRule ^(.*)$ dist/$1 [L]
-
-# SPA fallback
-RewriteRule ^ dist/index.html [L]
+RewriteRule ^(.*)$ index.php [QSA,L]
